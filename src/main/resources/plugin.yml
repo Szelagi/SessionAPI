@@ -1,0 +1,21 @@
+name: SessionAPI
+version: '${project.version}'
+main: pl.szelagi.SessionAPI
+api-version: '1.20'
+load: STARTUP
+authors: [Szelagi]
+commands:
+#   Board editor
+  board-save:
+    description: "editor board save"
+  board-edit:
+    description: "start board editor"
+  board-exit:
+    description: "exit board editor"
+#   Session manage
+  session-exit:
+    description: "force session exit"
+  session-add-player:
+    description: "force session add player"
+  session-remove-player:
+    description: "force session remove player"
