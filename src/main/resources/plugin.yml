@@ -19,3 +19,5 @@ commands:
     description: "force session add player"
   session-remove-player:
     description: "force session remove player"
+  test-session:
+    description: "start test session"
