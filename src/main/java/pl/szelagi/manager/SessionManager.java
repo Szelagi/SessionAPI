@@ -37,6 +37,11 @@ public class SessionManager {
         return res;
     }
 
+    @Nullable
+    public static Session getSession(Player p, Class<?> classType) {
+        return getSession(p, classType::isInstance);
+    }
+
     @NotNull
     public static ArrayList<Session> getSessions() {
         return new ArrayList<>(PLAYER_SESSION_HASH_MAP.values());
