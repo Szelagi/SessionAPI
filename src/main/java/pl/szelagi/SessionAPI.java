@@ -3,6 +3,7 @@ package pl.szelagi;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.szelagi.command.CommandExecutor;
+import pl.szelagi.command.ConstructTabCompleter;
 import pl.szelagi.recovery.RecoveryListener;
 import pl.szelagi.world.SessionWorldManager;
 
@@ -34,7 +35,7 @@ public final class SessionAPI extends JavaPlugin {
 
         SessionWorldManager.initialize(this);
         CommandExecutor.initialize(this);
-
+        ConstructTabCompleter.initialize(this);
 
     }
 

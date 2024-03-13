@@ -18,20 +18,16 @@ import pl.szelagi.spatial.ISpatial;
 import pl.szelagi.tag.SignTagAnalyzer;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class CommandExecutor implements org.bukkit.command.CommandExecutor {
     private final JavaPlugin plugin;
-    public static final ArrayList<String> COMMAND_NAMES = new ArrayList<>(List.of(
-            "board-save", "board-edit", "board-exit", "board-list",
-            "session-exit", "session-add-player", "session-remove-player",
-            "test-session"
-    ));
     public static void initialize(JavaPlugin plugin) {
         var executor = new CommandExecutor(plugin);
-        for (var commandName : COMMAND_NAMES) {
+        for (var commandName : pl.szelagi.command.Command.NAMES) {
             var command = plugin.getCommand(commandName);
-            if (command != null) command.setExecutor(executor);
+            if (command != null) {
+                command.setExecutor(executor);
+            }
         }
     }
 
@@ -143,6 +139,10 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
                     player.sendMessage("§cYou are not in session!");
                     return false;
                 }
+                if (strings.length == 0) {
+                    player.sendMessage("Pattern: §c/session-remove-player <player>");
+                    return false;
+                }
                 var addPlayer = Bukkit.getPlayer(strings[0]);
                 if (addPlayer == null) {
                     player.sendMessage("§cPattern: /session-add-player <player>");
@@ -156,6 +156,10 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
                 var session = SessionManager.getSession(player);
                 if (session == null) {
                     player.sendMessage("§cYou are not in session!");
+                    return false;
+                }
+                if (strings.length == 0) {
+                    player.sendMessage("Pattern: §c/session-remove-player <player>");
                     return false;
                 }
                 var removePlayer = Bukkit.getPlayer(strings[0]);
