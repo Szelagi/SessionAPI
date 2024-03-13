@@ -68,7 +68,8 @@ public abstract class Controller extends BaseComponent {
         parentProcess.registerController(this);
 
         constructor();
-        for (var player : getSession().getPlayers()) systemPlayerConstructor(player, InitializeType.COMPONENT_CONSTRUCTOR);
+        for (var player : getSession().getPlayers())
+            systemPlayerConstructor(player, InitializeType.COMPONENT_CONSTRUCTOR);
 
         // ControllerStartEvent
         var event = new ControllerStartEvent(this);
@@ -85,7 +86,8 @@ public abstract class Controller extends BaseComponent {
         parentProcess.unregisterController(this); // unregister in parent
         remoteProcess.destroy(); // destroy children
 
-        for (var player : getSession().getPlayers()) systemPlayerDestructor(player, UninitializedType.COMPONENT_DESTRUCTOR);
+        for (var player : getSession().getPlayers())
+            systemPlayerDestructor(player, UninitializedType.COMPONENT_DESTRUCTOR);
         destructor();
 
         // ControllerStopEvent
@@ -100,24 +102,24 @@ public abstract class Controller extends BaseComponent {
 
 
     @MustBeInvokedByOverriders
-    public final void systemPlayerConstructor(Player player, InitializeType type) {
+    private void systemPlayerConstructor(Player player, InitializeType type) {
         playerConstructor(player, type);
         // recursive for player add
         if (type == InitializeType.PLAYER_ADD) {
             // controllers in
             for (var controller : getProcess().getControllers()) {
-                controller.systemPlayerConstructor(player, type);
+                reflectionSystemPlayerConstructor(controller, player, type);
             }
         }
     }
 
     @MustBeInvokedByOverriders
-    public final void systemPlayerDestructor(Player player, UninitializedType type) {
+    private void systemPlayerDestructor(Player player, UninitializedType type) {
         // recursive for player remove
         if (type == UninitializedType.PLAYER_REMOVE) {
             // controllers in
             for (var controller : getProcess().getControllers()) {
-                controller.systemPlayerDestructor(player, type);
+                reflectionSystemPlayerDestructor(controller, player, type);
             }
         }
         playerDestructor(player, type);

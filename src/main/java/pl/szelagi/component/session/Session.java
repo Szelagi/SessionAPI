@@ -159,28 +159,28 @@ public abstract class Session extends BaseComponent {
     }
 
     @MustBeInvokedByOverriders
-    public final void systemPlayerConstructor(Player player, InitializeType type) {
+    private void systemPlayerConstructor(Player player, InitializeType type) {
         playerConstructor(player, type);
         // recursive for player add
         if (type == InitializeType.PLAYER_ADD) {
             // controllers in
             for (var controller : getProcess().getControllers()) {
-                controller.systemPlayerConstructor(player, type);
+                reflectionSystemPlayerConstructor(controller, player, type);
             }
             // board
-            getCurrentBoard().systemPlayerConstructor(player, type);
+            reflectionSystemPlayerConstructor(getCurrentBoard(), player, type);
         }
     }
     @MustBeInvokedByOverriders
-    public final void systemPlayerDestructor(Player player, UninitializedType type) {
+    private void systemPlayerDestructor(Player player, UninitializedType type) {
         // recursive for player remove
         if (type == UninitializedType.PLAYER_REMOVE) {
             // controllers in
             for (var controller : getProcess().getControllers()) {
-                controller.systemPlayerDestructor(player, type);
+                reflectionSystemPlayerDestructor(controller, player, type);
             }
             // board
-            getCurrentBoard().systemPlayerDestructor(player, type);
+            reflectionSystemPlayerDestructor(getCurrentBoard(), player, type);
         }
         playerDestructor(player, type);
     }
@@ -222,9 +222,8 @@ public abstract class Session extends BaseComponent {
     public void removePlayer(Player player) throws PlayerUninitializeException {
         PlayerNoInThisSession.check(this, player);
 
-        players.remove(player);
-
         systemPlayerDestructor(player, UninitializedType.PLAYER_REMOVE);
+        players.remove(player);
 
     }
 

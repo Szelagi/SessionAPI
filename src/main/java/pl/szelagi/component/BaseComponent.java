@@ -1,15 +1,38 @@
 package pl.szelagi.component;
 
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.PlayerDestructorLambdas;
 import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.util.IncrementalGenerator;
+import pl.szelagi.util.ReflectionRecursive;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
+// Component must implement methods:
+//    private void systemPlayerConstructor(Player player, InitializeType type)
+//    private void systemPlayerDestructor(Player player, UninitializedType type)
+
 public abstract class BaseComponent implements ISessionComponent, IComponentConstructors {
+    protected static <T extends BaseComponent> void reflectionSystemPlayerConstructor(T object, Player player, InitializeType type) {
+        try {
+            var method = ReflectionRecursive.getDeclaredMethod(object, "systemPlayerConstructor", Player.class, InitializeType.class);
+            method.setAccessible(true);
+            method.invoke(object, player, type);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+    protected static <T extends BaseComponent> void reflectionSystemPlayerDestructor(T object, Player player, UninitializedType type) {
+        try {
+            var method = ReflectionRecursive.getDeclaredMethod(object, "systemPlayerDestructor", Player.class, UninitializedType.class);
+            method.setAccessible(true);
+            method.invoke(object, player, type);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
     private static final IncrementalGenerator incrementalGenerator = new IncrementalGenerator();
     private final UUID uuid = UUID.randomUUID();
     private final long id = incrementalGenerator.next();
@@ -30,11 +53,6 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
     public long getId() {
         return id;
     }
-
-    @MustBeInvokedByOverriders
-    public abstract void systemPlayerConstructor(Player player, InitializeType type);
-    @MustBeInvokedByOverriders
-    public abstract void systemPlayerDestructor(Player player, UninitializedType type);
 
     @Override
     public void constructor() {}

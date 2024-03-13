@@ -170,24 +170,24 @@ public abstract class Board extends BaseComponent {
 
 
     @MustBeInvokedByOverriders
-    public void systemPlayerConstructor(Player player, InitializeType type) {
+    private void systemPlayerConstructor(Player player, InitializeType type) {
         playerConstructor(player, type);
         // recursive for player add
         if (type == InitializeType.PLAYER_ADD) {
             // controllers in
             for (var controller : getProcess().getControllers()) {
-                controller.systemPlayerConstructor(player, type);
+                reflectionSystemPlayerConstructor(controller, player, type);
             }
         }
     }
 
     @MustBeInvokedByOverriders
-    public void systemPlayerDestructor(Player player, UninitializedType type) {
+    private void systemPlayerDestructor(Player player, UninitializedType type) {
         // recursive for player remove
         if (type == UninitializedType.PLAYER_REMOVE) {
             // controllers in
             for (var controller : getProcess().getControllers()) {
-                controller.systemPlayerDestructor(player, type);
+                reflectionSystemPlayerDestructor(controller, player, type);
             }
         }
         playerDestructor(player, type);
