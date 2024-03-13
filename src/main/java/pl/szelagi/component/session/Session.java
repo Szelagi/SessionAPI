@@ -235,6 +235,12 @@ public abstract class Session extends BaseComponent {
     }
 
     @Override
+    public void playerDestructor(Player player, UninitializedType type) {
+        super.playerDestructor(player, type);
+        SessionManager.removeRelation(player);
+    }
+
+    @Override
     public final void destructor() {
         super.destructor();
     }

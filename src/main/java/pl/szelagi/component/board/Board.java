@@ -122,6 +122,7 @@ public abstract class Board extends BaseComponent {
     }
     // Abstract
     protected void generate() {
+        getSpace().getCenter().getBlock().setType(Material.BEDROCK);
         if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
             boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
         }
