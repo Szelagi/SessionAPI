@@ -87,5 +87,25 @@ public interface ISpatial {
         return location1.getWorld().getName().equals(location2.getWorld().getName());
     }
 
+    private int distanceBlock(int a, int b) {
+        return Math.abs(a - b) + 1;
+    }
+
+    default int sizeX() {
+        return distanceBlock(getFirstPoint().getBlockX(), getSecondPoint().getBlockX());
+    }
+
+    default int sizeY() {
+        return distanceBlock(getFirstPoint().getBlockY(), getSecondPoint().getBlockY());
+    }
+
+    default int sizeZ() {
+        return distanceBlock(getFirstPoint().getBlockZ(), getSecondPoint().getBlockZ());
+    }
+
+    default int size() {
+        return sizeX() * sizeY() * sizeZ();
+    }
+
 
 }
