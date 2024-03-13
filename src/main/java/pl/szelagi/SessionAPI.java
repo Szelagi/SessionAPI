@@ -9,6 +9,10 @@ import pl.szelagi.world.SessionWorldManager;
 import java.io.File;
 
 public final class SessionAPI extends JavaPlugin {
+    private static SessionAPI instance;
+    public static SessionAPI getInstance() {
+        return instance;
+    }
     public static final File SESSION_API_DIRECTORY = new File(
             Bukkit.getServer().getPluginsFolder().getPath() + "/SessionAPI"
     );
@@ -20,6 +24,7 @@ public final class SessionAPI extends JavaPlugin {
     );
     @Override
     public void onEnable() {
+        instance = this;
         // Plugin startup logic
         if(!SESSION_API_DIRECTORY.exists()) SESSION_API_DIRECTORY.mkdir();
         if (!RECOVERY_DIRECTORY.exists()) RECOVERY_DIRECTORY.mkdir();
@@ -29,6 +34,7 @@ public final class SessionAPI extends JavaPlugin {
 
         SessionWorldManager.initialize(this);
         CommandExecutor.initialize(this);
+
 
     }
 
