@@ -188,24 +188,15 @@ public abstract class Session extends BaseComponent {
     // Abstract
     @Nonnull
     protected abstract Board getDefaultStartBoard();
-    @Nonnull
-    public abstract String getName();
-    // Private
-    // Systems
-    // Tasks
-    public @NotNull IControlProcess getProcess() {
+    public final @NotNull IControlProcess getProcess() {
         return remoteProcess;
     }
 
-    public @NotNull MainProcess getMainProcess() {
+    public final @NotNull MainProcess getMainProcess() {
         return mainProcess;
     }
 
-
-    // todo: playerAdd, playerRemove initializer
-
-
-    public Board getCurrentBoard() {
+    public final Board getCurrentBoard() {
         return currentBoard;
     }
 
@@ -252,7 +243,7 @@ public abstract class Session extends BaseComponent {
 
     @NotNull
     @Override
-    public JavaPlugin getPlugin() {
+    public final JavaPlugin getPlugin() {
         return plugin;
     }
 
@@ -267,4 +258,5 @@ public abstract class Session extends BaseComponent {
 //        new StopQuitController(this).start();
 //        new NoPlaceAndBreakController(this).start();
     }
+
 }

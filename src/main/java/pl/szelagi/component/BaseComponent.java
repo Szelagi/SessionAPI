@@ -1,12 +1,17 @@
 package pl.szelagi.component;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import pl.szelagi.component.board.Board;
 import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.PlayerDestructorLambdas;
 import pl.szelagi.component.constructor.UninitializedType;
+import pl.szelagi.component.controller.Controller;
+import pl.szelagi.component.session.Session;
 import pl.szelagi.util.IncrementalGenerator;
 import pl.szelagi.util.ReflectionRecursive;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
@@ -71,4 +76,28 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
         return new PlayerDestructorLambdas();
     }
     protected void startBaseControllers() {}
+
+
+    private final String name = generateName();
+
+    @Override
+    public @NotNull String getName() {
+        return name;
+    }
+
+    private char getComponentTypeChar() {
+        if (this instanceof Controller) return 'C';
+        if (this instanceof Board) return 'B';
+        if (this instanceof Session) return 'S';
+        return '-';
+    }
+
+    @Deprecated
+    // Output: class name + type char + # + plugin file name
+    private String generateName() {
+        var currentJarFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
+        var pluginJarName = currentJarFile.getName().replace(".jar", "");
+        return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginJarName;
+    }
+
 }

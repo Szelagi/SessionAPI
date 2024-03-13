@@ -16,7 +16,6 @@ import pl.szelagi.component.session.Session;
 import pl.szelagi.process.IControlProcess;
 import pl.szelagi.process.RemoteProcess;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class Controller extends BaseComponent {
@@ -59,7 +58,7 @@ public abstract class Controller extends BaseComponent {
 
     @MustBeInvokedByOverriders
     public void start() {
-        for (var p : getPlugin().getServer().getOnlinePlayers()) p.sendMessage("Start: " + this.getName() + " contoller");
+        for (var p : getPlugin().getServer().getOnlinePlayers()) p.sendMessage("Start: " + this.getName());
 
         if (isLocalEnable) return;
         isLocalEnable = true;
@@ -81,7 +80,7 @@ public abstract class Controller extends BaseComponent {
         if (!isLocalEnable) return;
         isLocalEnable = false;
 
-        for (var p : getPlugin().getServer().getOnlinePlayers()) p.sendMessage("Stop: " + this.getName() + " contoller");
+        for (var p : getPlugin().getServer().getOnlinePlayers()) p.sendMessage("Stop: " + this.getName());
 
         parentProcess.unregisterController(this); // unregister in parent
         remoteProcess.destroy(); // destroy children
@@ -97,9 +96,6 @@ public abstract class Controller extends BaseComponent {
     public boolean isLocalEnable() {
         return isLocalEnable;
     }
-    @Nonnull
-    public abstract String getName();
-
 
     @MustBeInvokedByOverriders
     private void systemPlayerConstructor(Player player, InitializeType type) {
@@ -124,4 +120,5 @@ public abstract class Controller extends BaseComponent {
         }
         playerDestructor(player, type);
     }
+
 }

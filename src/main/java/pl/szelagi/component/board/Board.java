@@ -156,8 +156,6 @@ public abstract class Board extends BaseComponent {
     protected WeatherType getDefaultWeather() {
         return WeatherType.CLEAR;
     }
-    @Nonnull
-    public abstract String getName();
 
     protected Location getStartSpawnLocation() {
         return getSpace().getAbove(getSpace().getCenter());
@@ -207,4 +205,5 @@ public abstract class Board extends BaseComponent {
         player.resetPlayerWeather();
         player.resetPlayerTime();
     }
+
 }
