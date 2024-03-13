@@ -114,3 +114,6 @@ run/
 
 # Test only directories
 test/
+
+# META-INF and MANIFEST.MF
+src/main/resources/META-INF/
