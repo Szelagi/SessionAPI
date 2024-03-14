@@ -1,7 +1,6 @@
 package pl.szelagi.buildin.controller.OtherEquipment;
 
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.PlayerDestructorLambda;
@@ -56,9 +55,4 @@ public class OtherEquipment extends Controller {
         return super.getPlayerDestructorRecovery(forPlayer).add(lambda);
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return "otherEquipment";
-    }
 }

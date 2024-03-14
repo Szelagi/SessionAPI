@@ -106,12 +106,6 @@ public class EntityController extends Controller {
         }
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return "entityController";
-    }
-
     public ArrayList<LivingEntity> getEntities() {
         return entities;
     }

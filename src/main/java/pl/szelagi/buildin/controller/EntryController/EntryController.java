@@ -42,12 +42,6 @@ public class EntryController extends Controller {
         }, Time.Ticks(0), Time.Ticks((int) refreshTicks));
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return "entryController";
-    }
-
     public @NotNull Event<PlayerEntryEvent> getPlayerEntryEventEvent() {
         return playerEntryEventEvent;
     }
