@@ -8,9 +8,9 @@ public class TestBoard extends Board {
     public TestBoard(Session session) {
         super(session);
     }
-    @NotNull
+
     @Override
-    public String getName() {
-        return "testBoard";
+    public @NotNull String getName() {
+        return "SystemTestBoard";
     }
 }

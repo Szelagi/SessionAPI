@@ -35,12 +35,6 @@ public class SessionSafeControlPlayers extends Controller {
         super(sessionComponent);
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return "sessionControlPlayers";
-    }
-
     @Override
     public void playerConstructor(Player player, InitializeType type) {
         super.playerConstructor(player, type);
@@ -65,5 +59,10 @@ public class SessionSafeControlPlayers extends Controller {
             for (var potionType : NEGATIVE_POTION_TYPES) player.removePotionEffect(potionType);
             state.load(player);
         });
+    }
+
+    @Override
+    public @NotNull String getName() {
+        return "SystemSafeControlController";
     }
 }

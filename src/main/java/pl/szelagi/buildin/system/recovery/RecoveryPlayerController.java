@@ -24,12 +24,6 @@ public class RecoveryPlayerController extends Controller {
         return super.getListener();
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return "recoveryPlayerController";
-    }
-
     @Override
     public void constructor() {
         super.constructor();
@@ -61,5 +55,10 @@ public class RecoveryPlayerController extends Controller {
         for (var player : getSession().getPlayers()) {
             recoveryFileManager.savePlayerRecovery(player);
         }
+    }
+
+    @Override
+    public @NotNull String getName() {
+        return "SystemRecoveryPlayerController";
     }
 }

@@ -17,9 +17,9 @@ public class SessionWatchDogController extends Controller {
         return new SessionWatchDogListener();
     }
 
-    @NotNull
     @Override
-    public String getName() {
-        return "sessionWatchDogController";
+    public @NotNull String getName() {
+        return "SystemSessionWatchDogController";
     }
+
 }

@@ -17,9 +17,9 @@ public class TestSession extends Session {
         return new TestBoard(this);
     }
 
-    @NotNull
     @Override
-    public String getName() {
-        return "testSession";
+    public @NotNull String getName() {
+        return "SystemTestSession";
     }
+
 }

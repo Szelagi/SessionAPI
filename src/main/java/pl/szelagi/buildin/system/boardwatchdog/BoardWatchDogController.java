@@ -27,9 +27,8 @@ public class BoardWatchDogController extends Controller {
         }
     }
 
-    @NotNull
     @Override
-    public String getName() {
-        return "boardWatchDogController";
+    public @NotNull String getName() {
+        return "SystemBoardWatchDogController";
     }
 }
