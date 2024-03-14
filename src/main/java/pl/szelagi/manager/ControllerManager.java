@@ -1,18 +1,17 @@
 package pl.szelagi.manager;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.controller.event.ControllerStartEvent;
 import pl.szelagi.component.controller.event.ControllerStopEvent;
 import pl.szelagi.component.session.Session;
-import pl.szelagi.manager.compare.CompareController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,51 +83,49 @@ public class ControllerManager {
         CONTROLLER_LISTENER_MAP.remove(name); // delete listener when is disable
     }
 
-    // getControllers
+//    @NotNull
+//    public static <T extends Controller> ArrayList<T> getAllowListenerControllers(Session session, Class<?> classType) {
+//
+//    }
+//    @Nullable
+//    public static <T extends Controller> T getFirstAllowListenerController(Session session, Class<?> classType) {
+//
+//    }
+
     @NotNull
-    public static <T extends Controller> ArrayList<T> getControllers(Session session, CompareController cp) {
-        var out = new ArrayList<T>();
-        if (session == null) return out;
-        for (var c : session.getMainProcess().getControllers()) {
-            if (cp.compare(c))
-                out.add((T) c);
-        }
-        return out;
+    public static <T extends Controller> ArrayList<T> getAllControllers(@Nullable Session session,
+                                                                        @NotNull Class<T> classType) {
+        if (session == null) return new ArrayList<>();
+        var list = session.getMainProcess().getControllers().stream()
+                .filter(classType::isInstance)
+                .map(classType::cast)
+                .toList();
+        return new ArrayList<>(list);
     }
+
+    // Enable controller
+    @NotNull
+    public static <T extends Controller> ArrayList<T> getControllers(@Nullable Session session,
+                                                                     @NotNull Class<T> classType) {
+        if (session == null) return new ArrayList<>();
+        var list = session.getMainProcess().getControllers().stream()
+                .filter(BaseComponent::isEnable)
+                .filter(classType::isInstance)
+                .map(classType::cast)
+                .toList();
+        return new ArrayList<>(list);
+    }
+
     @Nullable
-    public static <T extends Controller> T getFirstController(Session session, CompareController cp) {
+    public static <T extends Controller> T getFirstController(@Nullable Session session,
+                                                              @NotNull Class<T> classType) {
         if (session == null) return null;
-        for (var c : session.getMainProcess().getControllers()) {
-            if (cp.compare(c))
-                return (T) c;
-        }
-        return null;
-    }
-
-    // Player
-    @NotNull
-    public static <T extends Controller> ArrayList<T> getControllers(Player player, CompareController cp) {
-        var d = SessionManager.getSession(player);
-        if (d == null) return new ArrayList<>();
-        return getControllers(d, cp);
-    }
-
-    @Nullable
-    public static <T extends Controller> T getFirstController(Player player, CompareController cp) {
-        var d = SessionManager.getSession(player);
-        if (d == null) return null;
-        return getFirstController(d, cp);
-    }
-
-    // Class
-    @NotNull
-    public static <T extends Controller> ArrayList<T> getControllers(Session session, Class<?> classType) {
-        return getControllers(session, classType::isInstance);
-    }
-
-    @Nullable
-    public static <T extends Controller> T getFirstController(Session session, Class<?> classType) {
-        return getFirstController(session, classType::isInstance);
+        return session.getMainProcess().getControllers().stream()
+                .filter(BaseComponent::isEnable)
+                .filter(classType::isInstance)
+                .map(classType::cast)
+                .findFirst()
+                .orElse(null);
     }
 
 }
