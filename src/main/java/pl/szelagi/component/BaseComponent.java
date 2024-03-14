@@ -9,6 +9,7 @@ import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.session.Session;
 import pl.szelagi.util.IncrementalGenerator;
+import pl.szelagi.util.PluginRegistry;
 import pl.szelagi.util.ReflectionRecursive;
 
 import java.io.File;
@@ -92,12 +93,11 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
         return '-';
     }
 
-    @Deprecated
-    // Output: class name + type char + # + plugin file name
     private String generateName() {
         var currentJarFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
-        var pluginJarName = currentJarFile.getName().replace(".jar", "");
-        return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginJarName;
+        var plugin = PluginRegistry.getPlugin(currentJarFile.getName());
+        var pluginName = plugin != null ? plugin.getName() : currentJarFile.getName();
+        return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginName;
     }
 
 }
