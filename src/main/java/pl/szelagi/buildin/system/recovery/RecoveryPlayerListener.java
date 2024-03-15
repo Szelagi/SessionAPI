@@ -14,7 +14,7 @@ public class RecoveryPlayerListener implements Listener {
         var sessions = SessionManager.getSessions();
         for (var session : sessions) {
             RecoveryPlayerController controller = ControllerManager
-                    .getFirstController(session, c -> c instanceof RecoveryPlayerController);
+                    .getFirstController(session, RecoveryPlayerController.class);
             if (controller == null) continue;
             controller.save();
         }

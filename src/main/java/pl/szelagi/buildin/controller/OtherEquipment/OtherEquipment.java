@@ -10,11 +10,16 @@ import pl.szelagi.component.controller.Controller;
 import pl.szelagi.state.PlayerStateContainer;
 
 public class OtherEquipment extends Controller {
-    private final boolean isDefaultEquipment;
+    private final boolean isClearEquipment;
 
-    public OtherEquipment(ISessionComponent sessionComponent, boolean isDefaultEquipment) {
+    public OtherEquipment(ISessionComponent sessionComponent) {
         super(sessionComponent);
-        this.isDefaultEquipment = isDefaultEquipment;
+        this.isClearEquipment = true;
+    }
+
+    public OtherEquipment(ISessionComponent sessionComponent, boolean cloneEquipment) {
+        super(sessionComponent);
+        this.isClearEquipment = !cloneEquipment;
     }
 
     PlayerStateContainer<PlayerEqState> eqStatePlayerStateContainer = new PlayerStateContainer<>(PlayerEqState::new);
@@ -23,7 +28,7 @@ public class OtherEquipment extends Controller {
     public void playerConstructor(Player player, InitializeType type) {
         super.playerConstructor(player, type);
         eqStatePlayerStateContainer.get(player).save();
-        if (isDefaultEquipment) {
+        if (isClearEquipment) {
             player.getInventory().clear();
             player.clearActivePotionEffects();
             player.setHealthScale(20);

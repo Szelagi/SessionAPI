@@ -13,7 +13,7 @@ public class NoCreatureDropListener implements Listener {
         var dungeon = BoardManager.getSession(event.getEntity());
         if (dungeon == null) return;
         var controller = ControllerManager
-                .getFirstController(dungeon, c -> c instanceof NoCreatureDropController);
+                .getFirstController(dungeon, NoCreatureDropController.class);
         if (controller == null) return;
         event.getDrops().clear();
         event.setDroppedExp(0);

@@ -32,7 +32,7 @@ class EntityControllerListener implements Listener {
         var dungeon = BoardManager.getSession(entity);
         if (dungeon == null) return;
         ArrayList<EntityController> controllers = ControllerManager
-                .getControllers(dungeon, cp -> cp instanceof EntityController);
+                .getControllers(dungeon, EntityController.class);
         for (var controller : controllers) {
             var storedEntity = controller.getEntities().stream()
                     .filter(e -> e.equals(entity))
@@ -54,7 +54,7 @@ class EntityControllerListener implements Listener {
         var dungeon = BoardManager.getSession(entity.getLocation());
         if (dungeon == null) return false;
         ArrayList<EntityController> controllers = ControllerManager
-                .getControllers(dungeon, cp -> cp instanceof EntityController);
+                .getControllers(dungeon, EntityController.class);
         for (var controller : controllers) {
             var storedEntity = controller.getEntities().stream()
                     .filter(e -> e.equals(entity))

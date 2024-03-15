@@ -16,7 +16,7 @@ public class SessionWatchDogListener implements Listener {
 
         var session = SessionManager.getSession(event.getPlayer());
         if (session == null) return;
-        SessionWatchDogController controller = ControllerManager.getFirstController(session, c -> c instanceof SessionWatchDogController);
+        SessionWatchDogController controller = ControllerManager.getFirstController(session, SessionWatchDogController.class);
         if (controller == null) return;
 
         controller.getProcess().runControlledTaskLater(() -> {

@@ -14,7 +14,7 @@ public class NoNaturalSpawnListener implements Listener {
         var dungeon = BoardManager.getSession(event.getEntity().getLocation());
         if (dungeon == null) return;
         NoNaturalSpawnController controller = ControllerManager
-                .getFirstController(dungeon, c -> c instanceof NoNaturalSpawnController);
+                .getFirstController(dungeon, NoNaturalSpawnController.class);
         if (controller == null) return;
         event.setCancelled(true);
     }
