@@ -116,29 +116,43 @@ public interface ISpatial {
         return Math.abs(axiGetter.get(getFirstPoint()) - axiGetter.get(getSecondPoint())) / 2d + 1;
     }
 
-    default @NotNull Collection<Entity> getEntitiesIn() {
-        final var sqrt2 = Math.sqrt(2);
+    default ImmutableRadius3D<Double> getRadiusInscribed() {
         var radiusX = getRadius(Location::getBlockX);
         var radiusY = getRadius(Location::getBlockY);
         var radiusZ = getRadius(Location::getBlockZ);
-        // square (ISpatial) inscribed in a circle
-        return getCenterBlockLocation().getNearbyEntities(
-                radiusX*sqrt2,
-                radiusY+sqrt2,
-                radiusZ*sqrt2
-        );
+        return new ImmutableRadius3D<>(radiusZ, radiusY, radiusZ);
+    }
+
+    default ImmutableRadius3D<Double> getRadiusCircumscribed() {
+        final var sqrt2 = Math.sqrt(2);
+        var inscribed = getRadiusInscribed();
+        return new ImmutableRadius3D<>(
+                inscribed.getX()*sqrt2,
+                inscribed.getY()*sqrt2,
+                inscribed.getZ()*sqrt2);
+    }
+
+    default @NotNull Collection<Entity> getEntitiesIn() {
+        var radius = getRadiusCircumscribed();
+        return  getCenterBlockLocation().getNearbyEntities(radius.getX(), radius.getY(), radius.getZ())
+                .stream()
+                .filter(entity -> isLocationIn(entity.getLocation()))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     default @NotNull Collection<Entity> getMobsIn() {
-        return getEntitiesIn().stream()
-                .filter(entity -> !(entity instanceof Player))
-                .collect(Collectors.toCollection(ArrayList::new));
+        var radius = getRadiusCircumscribed();
+        return getCenterBlockLocation().getNearbyEntitiesByType(
+                Entity.class,
+                radius.getX(),
+                radius.getY(),
+                radius.getZ(),
+                entity -> !(entity instanceof Player)
+        );
     }
 
     default @NotNull Collection<Player> getPlayersIn() {
-        return getEntitiesIn().stream()
-                .filter(entity -> entity instanceof Player)
-                .map(Player.class::cast)
-                .collect(Collectors.toCollection(ArrayList::new));
+        var radius = getRadiusCircumscribed();
+        return getCenterBlockLocation().getNearbyPlayers(radius.getX(), radius.getY(), radius.getZ());
     }
 }
