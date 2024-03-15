@@ -34,6 +34,7 @@ public class CreatorBoard extends Board {
     @Override
     protected void degenerate() {
         for (var b : getSpace().getBlocksInArea()) b.setType(Material.AIR);
+        for (var entity : getSpace().getEntitiesIn()) entity.remove();
     }
 
 
