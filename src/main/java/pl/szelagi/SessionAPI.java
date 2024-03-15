@@ -4,7 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.szelagi.command.CommandExecutor;
 import pl.szelagi.command.ConstructTabCompleter;
-import pl.szelagi.recovery.RecoveryListener;
+import pl.szelagi.manager.BoardManager;
+import pl.szelagi.manager.ControllerManager;
+import pl.szelagi.manager.SessionManager;
+import pl.szelagi.recovery.Recovery;
 import pl.szelagi.world.SessionWorldManager;
 
 import java.io.File;
@@ -31,11 +34,17 @@ public final class SessionAPI extends JavaPlugin {
         if (!RECOVERY_DIRECTORY.exists()) RECOVERY_DIRECTORY.mkdir();
         if (!BOARD_DIRECTORY.exists()) BOARD_DIRECTORY.mkdir();
 
-        getServer().getPluginManager().registerEvents(new RecoveryListener(), this);
+        SessionManager.initialize(this);
+        BoardManager.initialize(this);
+        ControllerManager.initialize(this);
+
+        Recovery.initialize(this);
 
         SessionWorldManager.initialize(this);
         CommandExecutor.initialize(this);
         ConstructTabCompleter.initialize(this);
+
+
 
     }
 
