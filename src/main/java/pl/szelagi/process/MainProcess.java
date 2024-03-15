@@ -72,7 +72,7 @@ public class MainProcess extends Process {
         ArrayList<Controller> cloneArrayListControllers = new ArrayList<>();
         cloneArrayListControllers.addAll(getControllers());
 
-        for (var controller : cloneArrayListControllers) {
+        for (var controller : cloneArrayListControllers ) {
             controller.stop();
         }
     }

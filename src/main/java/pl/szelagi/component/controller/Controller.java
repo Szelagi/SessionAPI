@@ -15,6 +15,7 @@ import pl.szelagi.component.controller.event.ControllerStopEvent;
 import pl.szelagi.component.session.Session;
 import pl.szelagi.process.IControlProcess;
 import pl.szelagi.process.RemoteProcess;
+import pl.szelagi.util.Debug;
 
 import javax.annotation.Nullable;
 
@@ -22,7 +23,7 @@ public abstract class Controller extends BaseComponent {
     private final JavaPlugin plugin;
     private final Session session;
     private final IControlProcess parentProcess;
-    private boolean isLocalEnable;
+    private boolean isAllowListener;
     private final RemoteProcess remoteProcess;
 
     public Controller(ISessionComponent sessionComponent) {
@@ -36,7 +37,7 @@ public abstract class Controller extends BaseComponent {
         this.plugin = session.getPlugin();
         this.session = session;
         this.parentProcess = parentProcess;
-        isLocalEnable = false;
+        isAllowListener = false;
         this.remoteProcess = new RemoteProcess(session.getMainProcess());
     }
 
@@ -58,14 +59,15 @@ public abstract class Controller extends BaseComponent {
 
     @MustBeInvokedByOverriders
     public void start() {
-        for (var p : getPlugin().getServer().getOnlinePlayers()) p.sendMessage("Start: " + this.getName());
-
-        if (isLocalEnable) return;
-        isLocalEnable = true;
+        if (isEnable()) return;
+        setEnable(true);
+        isAllowListener = true;
+        Debug.send(this, "start");
 
         // auto register
         parentProcess.registerController(this);
 
+        Debug.send(this, "constructor");
         constructor();
         for (var player : getSession().getPlayers())
             systemPlayerConstructor(player, InitializeType.COMPONENT_CONSTRUCTOR);
@@ -77,28 +79,30 @@ public abstract class Controller extends BaseComponent {
 
     @MustBeInvokedByOverriders
     public void stop() {
-        if (!isLocalEnable) return;
-        isLocalEnable = false;
+        if(!isEnable()) return;
+        setEnable(false);
+        isAllowListener = false;
 
-        for (var p : getPlugin().getServer().getOnlinePlayers()) p.sendMessage("Stop: " + this.getName());
+        Debug.send(this, "stop");
 
         parentProcess.unregisterController(this); // unregister in parent
         remoteProcess.destroy(); // destroy children
 
-        for (var player : getSession().getPlayers())
+        for (var player : getSession().getPlayers()) {
             systemPlayerDestructor(player, UninitializedType.COMPONENT_DESTRUCTOR);
+        }
+
+        Debug.send(this, "destructor");
         destructor();
 
         // ControllerStopEvent
         var event = new ControllerStopEvent(this);
         Bukkit.getPluginManager().callEvent(event);
     }
-    public boolean isLocalEnable() {
-        return isLocalEnable;
-    }
 
     @MustBeInvokedByOverriders
     private void systemPlayerConstructor(Player player, InitializeType type) {
+        Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
         playerConstructor(player, type);
         // recursive for player add
         if (type == InitializeType.PLAYER_ADD) {
@@ -118,7 +122,15 @@ public abstract class Controller extends BaseComponent {
                 reflectionSystemPlayerDestructor(controller, player, type);
             }
         }
+        Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
         playerDestructor(player, type);
     }
 
+    public boolean isAllowListener() {
+        return isAllowListener;
+    }
+
+    public void setAllowListener(boolean allowListener) {
+        isAllowListener = allowListener;
+    }
 }

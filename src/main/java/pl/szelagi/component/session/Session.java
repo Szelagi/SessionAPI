@@ -28,6 +28,7 @@ import pl.szelagi.manager.SessionManager;
 import pl.szelagi.process.IControlProcess;
 import pl.szelagi.process.MainProcess;
 import pl.szelagi.process.RemoteProcess;
+import pl.szelagi.util.Debug;
 import pl.szelagi.util.timespigot.Time;
 
 import javax.annotation.Nonnull;
@@ -35,25 +36,21 @@ import java.util.ArrayList;
 
 public abstract class Session extends BaseComponent {
     @Override
-    public @NotNull Session getSession() {
+    public @NotNull final Session getSession() {
         return this;
     }
-
     private final MainProcess mainProcess;
     private final RemoteProcess remoteProcess;
-
     private final JavaPlugin plugin;
-
-    protected final ArrayList<Player> players;
-
-
+    protected final ArrayList<Player> players = new ArrayList<>();
+    private final ArrayList<Player> initialPlayers;
     private Board currentBoard;
 
     private RecoveryPlayerController recoveryPlayerController;
 
     public Session(JavaPlugin plugin, ArrayList<Player> players) {
         this.plugin = plugin;
-        this.players = players;
+        this.initialPlayers = players;
         this.mainProcess = new MainProcess(this);
         this.remoteProcess = new RemoteProcess(mainProcess);
     }
@@ -61,8 +58,8 @@ public abstract class Session extends BaseComponent {
     public Session(JavaPlugin plugin, Player player) {
         this.plugin = plugin;
 
-        this.players = new ArrayList<>();
-        this.players.add(player);
+        this.initialPlayers = new ArrayList<>();
+        initialPlayers.add(player);
 
         this.mainProcess = new MainProcess(this);
         this.remoteProcess = new RemoteProcess(mainProcess);
@@ -71,7 +68,7 @@ public abstract class Session extends BaseComponent {
     public Session(JavaPlugin plugin) {
         this.plugin = plugin;
 
-        this.players = new ArrayList<>();
+        this.initialPlayers = new ArrayList<>();
         this.mainProcess = new MainProcess(this);
         this.remoteProcess = new RemoteProcess(mainProcess);
     }
@@ -80,21 +77,21 @@ public abstract class Session extends BaseComponent {
     public void start() throws SessionStartException, PlayerInitializeException {
         if (isEnable()) throw new SessionIsEnableException("session is enable exception " + getName());
         // exceptions system
-        for (var player : getPlayers()) {
+        for (var player : initialPlayers) {
             PlayerInSessionException.check(player);
             PlayerIsNotAliveException.check(player);
         }
-
         setEnable(true);
-
+        Debug.send(this, "start");
         currentBoard = getDefaultStartBoard();
 
-
-
         // initialize consturcot
+        Debug.send(this, "constructor");
         constructor();
         // initialize players
-        for (var p : players) systemPlayerConstructor(p, InitializeType.COMPONENT_CONSTRUCTOR);
+        for (var player : initialPlayers) {
+            systemPlayerConstructor(player, InitializeType.COMPONENT_CONSTRUCTOR, true, false);
+        }
 
         // run system tasks
         getProcess().runControlledTaskTimer(
@@ -127,14 +124,21 @@ public abstract class Session extends BaseComponent {
     public void stop(StopCause cause) throws SessionStopException {
         if (!isEnable()) throw new SessionIsDisableException(".stop() for disable session " + getName());
 
-        // deinitialize players
-        for (var p : players) systemPlayerDestructor(p, UninitializedType.COMPONENT_DESTRUCTOR);
-        // system destructor
-        destructor(cause);
+        Debug.send(this, "stop");
 
         //stop and destroy all tasks
         mainProcess.destroy();
         currentBoard.stop();
+
+        // deinitialize players
+        var playersArrayCopy = new ArrayList<>(players);
+        for (var player : playersArrayCopy) {
+            systemPlayerDestructor(player, UninitializedType.COMPONENT_DESTRUCTOR);
+        }
+        // system destructor
+        Debug.send(this, "destructor");
+        destructor(cause);
+
 
         setEnable(false);
 
@@ -159,20 +163,27 @@ public abstract class Session extends BaseComponent {
     }
 
     @MustBeInvokedByOverriders
-    private void systemPlayerConstructor(Player player, InitializeType type) {
+    private void systemPlayerConstructor(Player player, InitializeType type, boolean invokeControllers, boolean invokeBoard) {
+        SessionManager.addRelation(player, this.getSession());
+        players.add(player);
+        Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
         playerConstructor(player, type);
         // recursive for player add
-        if (type == InitializeType.PLAYER_ADD) {
-            // controllers in
+        // controllers in
+        if (invokeControllers) {
             for (var controller : getProcess().getControllers()) {
                 reflectionSystemPlayerConstructor(controller, player, type);
             }
-            // board
+        }
+        // board
+        if (invokeBoard) {
             reflectionSystemPlayerConstructor(getCurrentBoard(), player, type);
         }
     }
     @MustBeInvokedByOverriders
     private void systemPlayerDestructor(Player player, UninitializedType type) {
+        SessionManager.removeRelation(player);
+        players.remove(player);
         // recursive for player remove
         if (type == UninitializedType.PLAYER_REMOVE) {
             // controllers in
@@ -182,6 +193,7 @@ public abstract class Session extends BaseComponent {
             // board
             reflectionSystemPlayerDestructor(getCurrentBoard(), player, type);
         }
+        Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
         playerDestructor(player, type);
     }
 
@@ -204,32 +216,15 @@ public abstract class Session extends BaseComponent {
     public void addPlayer(Player player) throws PlayerInitializeException {
         PlayerIsNotAliveException.check(player);
         PlayerInSessionException.check(player);
-
-        players.add(player);
-        systemPlayerConstructor(player, InitializeType.PLAYER_ADD);
+        systemPlayerConstructor(player, InitializeType.PLAYER_ADD, true, true);
     }
 
     @MustBeInvokedByOverriders
     public void removePlayer(Player player) throws PlayerUninitializeException {
         PlayerNoInThisSession.check(this, player);
-
         systemPlayerDestructor(player, UninitializedType.PLAYER_REMOVE);
-        players.remove(player);
 
     }
-
-    @Override
-    public void playerConstructor(Player player, InitializeType type) {
-        super.playerConstructor(player, type);
-        SessionManager.addRelation(player, this);
-    }
-
-    @Override
-    public void playerDestructor(Player player, UninitializedType type) {
-        super.playerDestructor(player, type);
-        SessionManager.removeRelation(player);
-    }
-
     @Override
     public final void destructor() {
         super.destructor();
@@ -259,4 +254,7 @@ public abstract class Session extends BaseComponent {
 //        new NoPlaceAndBreakController(this).start();
     }
 
+    public ArrayList<Player> getInitialPlayers() {
+        return initialPlayers;
+    }
 }

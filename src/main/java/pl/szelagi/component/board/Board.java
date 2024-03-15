@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
 import pl.szelagi.buildin.system.boardwatchdog.BoardWatchDogController;
 import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.board.event.BoardStartEvent;
@@ -22,6 +23,7 @@ import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.space.Space;
 import pl.szelagi.space.SpaceAllocator;
 import pl.szelagi.tag.SignTagData;
+import pl.szelagi.util.Debug;
 import pl.szelagi.world.SessionWorldManager;
 
 import javax.annotation.Nonnull;
@@ -70,6 +72,10 @@ public abstract class Board extends BaseComponent {
 
     @MustBeInvokedByOverriders
     public void start() {
+        // start exception
+
+        Debug.send(this, "start");
+
         isUsed = true;
         space = SpaceAllocator.allocate(SessionWorldManager.getSessionWorld());
         this.boardFileManager = new BoardFileManager(getName(), getSpace());
@@ -81,10 +87,11 @@ public abstract class Board extends BaseComponent {
         }
 
         // initialize players
+        Debug.send(this, "constructor");
         constructor();
         for (var p : getSession().getPlayers()) systemPlayerConstructor(p, InitializeType.COMPONENT_CONSTRUCTOR);
 
-
+        Debug.send(this, "generate");
         generate();
 
 
@@ -93,17 +100,24 @@ public abstract class Board extends BaseComponent {
         Bukkit.getPluginManager().callEvent(event);
 
         new BoardWatchDogController(this).start();
+        new NoNaturalSpawnController(this).start();
     }
 
     @MustBeInvokedByOverriders
     public void stop() {
+        Debug.send(this, "stop");
+
+
         remoteProcess.destroy();
+
 
         // initialize players
         for (var p : getSession().getPlayers()) systemPlayerDestructor(p, UninitializedType.COMPONENT_DESTRUCTOR);
+        Debug.send(this, "destructor");
         destructor();
 
         // degenerate
+        Debug.send(this, "degenerate");
         degenerate();
 
         // deallocate space
@@ -144,6 +158,8 @@ public abstract class Board extends BaseComponent {
     protected void degenerate() {
         if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME))
             boardFileManager.loadSchematic(SCHEMATIC_DESTRUCTOR_NAME);
+        for (var entity : getSpace().getEntitiesIn()) entity.remove();
+
     }
     protected int getDefaultTime() {
         return 0;
@@ -169,6 +185,7 @@ public abstract class Board extends BaseComponent {
 
     @MustBeInvokedByOverriders
     private void systemPlayerConstructor(Player player, InitializeType type) {
+        Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
         playerConstructor(player, type);
         // recursive for player add
         if (type == InitializeType.PLAYER_ADD) {
@@ -188,6 +205,7 @@ public abstract class Board extends BaseComponent {
                 reflectionSystemPlayerDestructor(controller, player, type);
             }
         }
+        Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
         playerDestructor(player, type);
     }
 
