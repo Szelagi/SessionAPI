@@ -2,9 +2,13 @@ package pl.szelagi.spatial;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 public interface ISpatial {
     interface AxiGetter<T> {
@@ -108,4 +112,33 @@ public interface ISpatial {
     }
 
 
+    private double getRadius(AxiGetter<Integer> axiGetter) {
+        return Math.abs(axiGetter.get(getFirstPoint()) - axiGetter.get(getSecondPoint())) / 2d + 1;
+    }
+
+    default @NotNull Collection<Entity> getEntitiesIn() {
+        final var sqrt2 = Math.sqrt(2);
+        var radiusX = getRadius(Location::getBlockX);
+        var radiusY = getRadius(Location::getBlockY);
+        var radiusZ = getRadius(Location::getBlockZ);
+        // square (ISpatial) inscribed in a circle
+        return getCenterBlockLocation().getNearbyEntities(
+                radiusX*sqrt2,
+                radiusY+sqrt2,
+                radiusZ*sqrt2
+        );
+    }
+
+    default @NotNull Collection<Entity> getMobsIn() {
+        return getEntitiesIn().stream()
+                .filter(entity -> !(entity instanceof Player))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    default @NotNull Collection<Player> getPlayersIn() {
+        return getEntitiesIn().stream()
+                .filter(entity -> entity instanceof Player)
+                .map(Player.class::cast)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 }
