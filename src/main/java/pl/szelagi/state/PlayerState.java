@@ -2,9 +2,7 @@ package pl.szelagi.state;
 
 import org.bukkit.entity.Player;
 
-import java.io.Serializable;
-
-public abstract class PlayerState implements Serializable {
+public abstract class PlayerState {
     private transient final Player player;
     public PlayerState(Player player) {
         this.player = player;
