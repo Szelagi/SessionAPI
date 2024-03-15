@@ -12,8 +12,8 @@ public class RecoveryListener implements Listener {
         if (recoveryFileManager.existsPlayerRecovery(event.getPlayer())) {
             var recovery = recoveryFileManager.loadPlayerRecovery(event.getPlayer());
             recovery.run(event.getPlayer());
-            event.getPlayer().sendMessage("Recovery success!");
             recoveryFileManager.deletePlayerRecovery(event.getPlayer());
         }
     }
+
 }

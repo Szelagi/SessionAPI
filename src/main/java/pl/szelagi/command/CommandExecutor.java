@@ -173,7 +173,8 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
             }
             case "test-session" -> {
                 try {
-                    new TestSession(plugin, player).start();
+                    var players = new ArrayList<Player>(plugin.getServer().getOnlinePlayers());
+                    new TestSession(plugin, players).start();
                     player.sendMessage("§aOK");
                 } catch (SessionStartException e) {
                     player.sendMessage("§cSession start exception: §f" + e.getMessage());

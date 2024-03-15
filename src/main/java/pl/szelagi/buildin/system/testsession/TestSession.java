@@ -6,9 +6,15 @@ import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.Session;
 
+import java.util.ArrayList;
+
 public class TestSession extends Session {
     public TestSession(JavaPlugin plugin, Player player) {
         super(plugin, player);
+    }
+
+    public TestSession(JavaPlugin plugin, ArrayList<Player> players) {
+        super(plugin, players);
     }
 
     @NotNull
