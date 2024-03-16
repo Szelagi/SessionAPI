@@ -13,7 +13,7 @@ public class SessionStopEvent extends Event {
         this.session = session;
     }
 
-    public Session getDungeon() {
+    public Session getSession() {
         return session;
     }
 
