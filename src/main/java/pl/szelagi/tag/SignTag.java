@@ -1,6 +1,7 @@
 package pl.szelagi.tag;
 
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.relative.RelativeLocation;
 
@@ -15,13 +16,18 @@ public class SignTag implements Serializable {
     private final RelativeLocation relativeLocation;
 
     @NotNull
+    private final BlockFace blockFace;
+
+    @NotNull
     private final String[] args;
 
     public SignTag(@NotNull String tag,
                    @NotNull RelativeLocation relativeLocation,
+                   @NotNull BlockFace blockFace,
                    @NotNull String[] args) {
         this.tag = tag;
         this.relativeLocation = relativeLocation;
+        this.blockFace = blockFace;
         this.args = args;
     }
 
@@ -47,6 +53,11 @@ public class SignTag implements Serializable {
 
     public int getArgumentCount() {
         return args.length;
+    }
+
+    @NotNull
+    public BlockFace getBlockFace() {
+        return blockFace;
     }
 
     public String[] getArgs() {

@@ -1,6 +1,7 @@
 package pl.szelagi.tag;
 
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
@@ -47,7 +48,8 @@ public class SignTagAnalyzer {
                 name = mainLine.replace(prefix, "");
                 args = getArgs(signSide.getLines());
                 var relativeLocation = new RelativeLocation(b.getLocation(), spatial.getCenter());
-                element = new SignTag(name, relativeLocation, args);
+                //var directional = (Directional) b.getBlockData();
+                element = new SignTag(name, relativeLocation, BlockFace.NORTH, args);
                 data.add(element);
             }
 
