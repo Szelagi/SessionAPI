@@ -8,7 +8,7 @@ import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.PlayerDestructorLambdas;
 import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.Controller;
-import pl.szelagi.state.PlayerStateContainer;
+import pl.szelagi.state.PlayerContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class SessionSafeControlPlayers extends Controller {
             PotionEffectType.GLOWING
     ));
 
-    private final PlayerStateContainer<SessionSafeControlPlayerState> stateContainer = new PlayerStateContainer<>(SessionSafeControlPlayerState::new);
+    private final PlayerContainer<SessionSafeControlPlayerState> stateContainer = new PlayerContainer<>(SessionSafeControlPlayerState::new);
 
     public SessionSafeControlPlayers(ISessionComponent sessionComponent) {
         super(sessionComponent);

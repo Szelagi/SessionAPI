@@ -7,7 +7,7 @@ import pl.szelagi.component.constructor.PlayerDestructorLambda;
 import pl.szelagi.component.constructor.PlayerDestructorLambdas;
 import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.Controller;
-import pl.szelagi.state.PlayerStateContainer;
+import pl.szelagi.state.PlayerContainer;
 
 public class OtherEquipment extends Controller {
     private final boolean isClearEquipment;
@@ -22,12 +22,12 @@ public class OtherEquipment extends Controller {
         this.isClearEquipment = !cloneEquipment;
     }
 
-    PlayerStateContainer<PlayerEqState> eqStatePlayerStateContainer = new PlayerStateContainer<>(PlayerEqState::new);
+    PlayerContainer<PlayerEqState> eqStatePlayerContainer = new PlayerContainer<>(PlayerEqState::new);
 
     @Override
     public void playerConstructor(Player player, InitializeType type) {
         super.playerConstructor(player, type);
-        eqStatePlayerStateContainer.get(player).save();
+        eqStatePlayerContainer.get(player).save();
         if (isClearEquipment) {
             player.getInventory().clear();
             player.clearActivePotionEffects();
@@ -42,7 +42,7 @@ public class OtherEquipment extends Controller {
     }
 
     private PlayerDestructorLambda getPlayerDestructor(Player forPlayer) {
-        var state = eqStatePlayerStateContainer.get(forPlayer);
+        var state = eqStatePlayerContainer.get(forPlayer);
         return (player, type) -> {
             state.load(player);
         };
