@@ -9,6 +9,8 @@ import pl.szelagi.buildin.system.recovery.RecoveryPlayerController;
 import pl.szelagi.buildin.system.sessionsafecontrolplayers.SessionSafeControlPlayers;
 import pl.szelagi.buildin.system.sessionwatchdog.SessionWatchDogController;
 import pl.szelagi.component.BaseComponent;
+import pl.szelagi.component.baseexception.multi.MultiStartException;
+import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.UninitializedType;
@@ -17,8 +19,6 @@ import pl.szelagi.component.session.event.SessionStartEvent;
 import pl.szelagi.component.session.event.SessionStopEvent;
 import pl.szelagi.component.session.exception.SessionStartException;
 import pl.szelagi.component.session.exception.SessionStopException;
-import pl.szelagi.component.session.exception.other.SessionIsDisableException;
-import pl.szelagi.component.session.exception.other.SessionIsEnableException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerInSessionException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerInitializeException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerIsNotAliveException;
@@ -75,7 +75,7 @@ public abstract class Session extends BaseComponent {
 
     @MustBeInvokedByOverriders
     public void start() throws SessionStartException, PlayerInitializeException {
-        if (isEnable()) throw new SessionIsEnableException("session is enable exception " + getName());
+        if (isEnable()) throw new MultiStartException(this);
         // exceptions system
         for (var player : initialPlayers) {
             PlayerInSessionException.check(player);
@@ -122,7 +122,7 @@ public abstract class Session extends BaseComponent {
 
     @MustBeInvokedByOverriders
     public void stop(StopCause cause) throws SessionStopException {
-        if (!isEnable()) throw new SessionIsDisableException(".stop() for disable session " + getName());
+        if (!isEnable()) throw new MultiStopException(this);
 
         Debug.send(this, "stop");
 

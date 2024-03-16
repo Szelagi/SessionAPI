@@ -12,6 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
 import pl.szelagi.buildin.system.boardwatchdog.BoardWatchDogController;
 import pl.szelagi.component.BaseComponent;
+import pl.szelagi.component.baseexception.StartException;
+import pl.szelagi.component.baseexception.StopException;
+import pl.szelagi.component.baseexception.multi.MultiStartException;
+import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.event.BoardStartEvent;
 import pl.szelagi.component.board.event.BoardStopEvent;
 import pl.szelagi.component.board.filemanager.BoardFileManager;
@@ -71,12 +75,17 @@ public abstract class Board extends BaseComponent {
     // Start and stop
 
     @MustBeInvokedByOverriders
-    public void start() {
+    public void start() throws StartException {
+        if (isEnable()) throw new MultiStartException(this);
+        if (isUsed) throw new StartException("board start used");
+        setEnable(true);
+        isUsed = true;
+
         // start exception
 
         Debug.send(this, "start");
 
-        isUsed = true;
+
         space = SpaceAllocator.allocate(SessionWorldManager.getSessionWorld());
         this.boardFileManager = new BoardFileManager(getName(), getSpace());
 
@@ -104,7 +113,11 @@ public abstract class Board extends BaseComponent {
     }
 
     @MustBeInvokedByOverriders
-    public void stop() {
+    public void stop() throws StopException {
+        if (!isEnable()) throw new MultiStopException(this);
+        setEnable(false);
+
+
         Debug.send(this, "stop");
 
 

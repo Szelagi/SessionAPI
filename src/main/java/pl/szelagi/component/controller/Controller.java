@@ -8,6 +8,10 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.ISessionComponent;
+import pl.szelagi.component.baseexception.StartException;
+import pl.szelagi.component.baseexception.StopException;
+import pl.szelagi.component.baseexception.multi.MultiStartException;
+import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.event.ControllerStartEvent;
@@ -58,8 +62,8 @@ public abstract class Controller extends BaseComponent {
     }
 
     @MustBeInvokedByOverriders
-    public void start() {
-        if (isEnable()) return;
+    public void start() throws StartException {
+        if (isEnable()) throw new MultiStartException(this);
         setEnable(true);
         isAllowListener = true;
         Debug.send(this, "start");
@@ -78,8 +82,8 @@ public abstract class Controller extends BaseComponent {
     }
 
     @MustBeInvokedByOverriders
-    public void stop() {
-        if(!isEnable()) return;
+    public void stop() throws StopException {
+        if(!isEnable()) throw new MultiStopException(this);
         setEnable(false);
         isAllowListener = false;
 
