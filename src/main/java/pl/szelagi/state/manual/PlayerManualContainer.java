@@ -2,10 +2,12 @@ package pl.szelagi.state.manual;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.state.InstanceCreator;
 import pl.szelagi.state.PlayerState;
 
 import java.util.HashMap;
+import java.util.function.Predicate;
 
 public class PlayerManualContainer<T extends PlayerState> {
     private final HashMap<Player, T> map = new HashMap<>();
@@ -32,6 +34,10 @@ public class PlayerManualContainer<T extends PlayerState> {
 
     public boolean isExists(@NotNull Player player) {
         return map.containsKey(player);
+    }
+
+    public @Nullable T find(Predicate<T> predicate) {
+        return map.values().stream().filter(predicate).findFirst().orElse(null);
     }
 
 }

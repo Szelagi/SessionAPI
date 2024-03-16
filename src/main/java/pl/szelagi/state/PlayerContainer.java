@@ -2,10 +2,12 @@ package pl.szelagi.state;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.state.manual.ManualContainerException;
 import pl.szelagi.state.manual.PlayerManualContainer;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 
 public class PlayerContainer<T extends PlayerState> implements Serializable {
     private final PlayerManualContainer<T> manualContainer;
@@ -22,5 +24,9 @@ public class PlayerContainer<T extends PlayerState> implements Serializable {
 
     public void clearPlayer(Player player) throws ManualContainerException {
         if (manualContainer.isExists(player)) manualContainer.remove(player);
+    }
+
+    public @Nullable T find(Predicate<T> predicate) {
+        return manualContainer.find(predicate);
     }
 }
