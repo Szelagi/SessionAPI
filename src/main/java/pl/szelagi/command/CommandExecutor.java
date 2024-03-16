@@ -145,7 +145,7 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
                 }
                 var addPlayer = Bukkit.getPlayer(strings[0]);
                 if (addPlayer == null) {
-                    player.sendMessage("§cPattern: /session-add-player <player>");
+                    player.sendMessage("§cPattern: /session-remove-player <player>");
                     return false;
                 };
                 session.addPlayer(addPlayer);
@@ -170,6 +170,22 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
                 session.removePlayer(removePlayer);
                 player.sendMessage("§aOK");
                 return true;
+            }
+            case "session-join" -> {
+                if (strings.length != 1) {
+                    player.sendMessage("Pattern: §c/session-join <session-name>:<session id>");
+                    return false;
+                }
+                var findName = strings[0];
+                var session = SessionManager.getSessions().stream().filter(loopSession -> {
+                    var name = loopSession.getName() + ":" + loopSession.getId();
+                    return findName.equals(name);
+                }).findFirst().orElse(null);
+                if (session == null) {
+                    player.sendMessage("§cNot found session with pattern: '" + strings[0] + "'!");
+                    return false;
+                }
+                session.addPlayer(player);
             }
             case "test-session" -> {
                 try {

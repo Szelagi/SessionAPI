@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pl.szelagi.SessionAPI;
+import pl.szelagi.manager.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 public class ConstructTabCompleter implements TabCompleter {
     private final JavaPlugin plugin;
     public static final ArrayList<String> TAB_COMMAND_NAMES = new ArrayList<>(List.of(
-            "board-edit"
+            "board-edit", "session-join"
     ));
     public static void initialize(JavaPlugin plugin) {
         var tabCompleter = new ConstructTabCompleter(plugin);
@@ -41,6 +42,10 @@ public class ConstructTabCompleter implements TabCompleter {
                     list.add(file.getName());
                 }
                 return list;
+            }
+            case "session-join" -> {
+                return SessionManager.getSessions().stream()
+                        .map(session -> session.getName() + ":" + session.getId()).toList();
             }
         }
         return null;
