@@ -13,9 +13,11 @@ import pl.szelagi.manager.compare.CompareSession;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class SessionManager {
     private static final HashMap<Player, Session> PLAYER_SESSION_HASH_MAP = new HashMap<>();
+    public static final ArrayList<Session> SESSIONS = new ArrayList<>();
     public static void addRelation(Player p, Session d) {
         PLAYER_SESSION_HASH_MAP.put(p, d);
     }
@@ -43,24 +45,23 @@ public class SessionManager {
     }
 
     @NotNull
-    public static ArrayList<Session> getSessions() {
-        return new ArrayList<>(PLAYER_SESSION_HASH_MAP.values());
+    public static List<Session> getSessions() {
+        return SESSIONS;
     }
 
     public static void initialize(JavaPlugin p) {
         class ManagerListener implements Listener {
             @EventHandler(ignoreCancelled = true)
-            public void onDungeonStart(SessionStartEvent event) {
-
+            public void onSessionStartEvent(SessionStartEvent event) {
+                SESSIONS.add(event.getSession());
             }
 
             @EventHandler(ignoreCancelled = true)
-            public void onDungeonStop(SessionStopEvent event) {
-
+            public void onSessionStopEvent(SessionStopEvent event) {
+                SESSIONS.remove(event.getSession());
             }
 
         }
-
         p.getServer().getPluginManager().registerEvents(new ManagerListener(), p);
     }
 }
