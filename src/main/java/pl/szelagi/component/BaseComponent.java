@@ -23,7 +23,7 @@ import java.util.UUID;
 public abstract class BaseComponent implements ISessionComponent, IComponentConstructors {
     protected static <T extends BaseComponent> void reflectionSystemPlayerConstructor(T object, Player player, InitializeType type) {
         try {
-            var method = ReflectionRecursive.getDeclaredMethod(object, "systemPlayerConstructor", Player.class, InitializeType.class);
+            var method = ReflectionRecursive.getDeclaredMethod(object.getClass(), "systemPlayerConstructor", Player.class, InitializeType.class);
             method.setAccessible(true);
             method.invoke(object, player, type);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
@@ -32,7 +32,7 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
     }
     protected static <T extends BaseComponent> void reflectionSystemPlayerDestructor(T object, Player player, UninitializedType type) {
         try {
-            var method = ReflectionRecursive.getDeclaredMethod(object, "systemPlayerDestructor", Player.class, UninitializedType.class);
+            var method = ReflectionRecursive.getDeclaredMethod(object.getClass(), "systemPlayerDestructor", Player.class, UninitializedType.class);
             method.setAccessible(true);
             method.invoke(object, player, type);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
@@ -98,6 +98,13 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
         var plugin = PluginRegistry.getPlugin(currentJarFile.getName());
         var pluginName = plugin != null ? plugin.getName() : currentJarFile.getName();
         return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginName;
+    }
+
+    public static ComponentType toType(ISessionComponent component) {
+        if (component instanceof Controller) return ComponentType.CONTROLLER;
+        if (component instanceof Board) return ComponentType.BOARD;
+        if (component instanceof Session) return ComponentType.SESSION;
+        return ComponentType.OTHER;
     }
 
 }
