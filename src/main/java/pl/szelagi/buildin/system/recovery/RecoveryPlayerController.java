@@ -12,53 +12,55 @@ import pl.szelagi.recovery.RecoveryFileManager;
 import pl.szelagi.util.timespigot.Time;
 
 public class RecoveryPlayerController extends Controller {
-    private final RecoveryFileManager recoveryFileManager = new RecoveryFileManager();
-    private boolean isDestructed = false;
-    public RecoveryPlayerController(Session sessionComponent) {
-        super(sessionComponent);
-    }
+	private final RecoveryFileManager recoveryFileManager = new RecoveryFileManager();
+	private boolean isDestructed = false;
 
-    @Nullable
-    @Override
-    public Listener getListener() {
-        return super.getListener();
-    }
+	public RecoveryPlayerController(Session sessionComponent) {
+		super(sessionComponent);
+	}
 
-    @Override
-    public void constructor() {
-        super.constructor();
-        getProcess().runControlledTaskTimer(this::save, Time.Seconds(1), Time.Seconds(1));
-    }
+	@Nullable
+	@Override
+	public Listener getListener() {
+		return super.getListener();
+	}
 
-    @Override
-    public void playerConstructor(Player player, InitializeType type) {
-        super.playerConstructor(player, type);
-        recoveryFileManager.savePlayerRecovery(player);
-    }
+	@Override
+	public void constructor() {
+		super.constructor();
+		getProcess().runControlledTaskTimer(this::save, Time.Seconds(1), Time.Seconds(1));
+	}
 
-    @Override
-    public void playerDestructor(Player player, UninitializedType type) {
-        super.playerDestructor(player, type);
-        if (recoveryFileManager.existsPlayerRecovery(player)) {
-            recoveryFileManager.deletePlayerRecovery(player);
-        }
-    }
+	@Override
+	public void playerConstructor(Player player, InitializeType type) {
+		super.playerConstructor(player, type);
+		recoveryFileManager.savePlayerRecovery(player);
+	}
 
-    @Override
-    public void destructor() {
-        super.destructor();
-        isDestructed = true;
-    }
+	@Override
+	public void playerDestructor(Player player, UninitializedType type) {
+		super.playerDestructor(player, type);
+		if (recoveryFileManager.existsPlayerRecovery(player)) {
+			recoveryFileManager.deletePlayerRecovery(player);
+		}
+	}
 
-    public void save() {
-        if (isDestructed) return;
-        for (var player : getSession().getPlayers()) {
-            recoveryFileManager.savePlayerRecovery(player);
-        }
-    }
+	@Override
+	public void destructor() {
+		super.destructor();
+		isDestructed = true;
+	}
 
-    @Override
-    public @NotNull String getName() {
-        return "SystemRecoveryPlayerController";
-    }
+	public void save() {
+		if (isDestructed)
+			return;
+		for (var player : getSession().getPlayers()) {
+			recoveryFileManager.savePlayerRecovery(player);
+		}
+	}
+
+	@Override
+	public @NotNull String getName() {
+		return "SystemRecoveryPlayerController";
+	}
 }

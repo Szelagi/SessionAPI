@@ -21,90 +21,101 @@ import java.util.UUID;
 //    private void systemPlayerDestructor(Player player, UninitializedType type)
 
 public abstract class BaseComponent implements ISessionComponent, IComponentConstructors {
-    protected static <T extends BaseComponent> void reflectionSystemPlayerConstructor(T object, Player player, InitializeType type) {
-        try {
-            var method = ReflectionRecursive.getDeclaredMethod(object.getClass(), "systemPlayerConstructor", Player.class, InitializeType.class);
-            method.setAccessible(true);
-            method.invoke(object, player, type);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-            throw new RuntimeException(exception);
-        }
-    }
-    protected static <T extends BaseComponent> void reflectionSystemPlayerDestructor(T object, Player player, UninitializedType type) {
-        try {
-            var method = ReflectionRecursive.getDeclaredMethod(object.getClass(), "systemPlayerDestructor", Player.class, UninitializedType.class);
-            method.setAccessible(true);
-            method.invoke(object, player, type);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-            throw new RuntimeException(exception);
-        }
-    }
-    private static final IncrementalGenerator incrementalGenerator = new IncrementalGenerator();
-    private final UUID uuid = UUID.randomUUID();
-    private final long id = incrementalGenerator.next();
-    private boolean isEnable = false;
+	private static final IncrementalGenerator incrementalGenerator = new IncrementalGenerator();
+	private final UUID uuid = UUID.randomUUID();
+	private final long id = incrementalGenerator.next();
+	private final String name = generateName();
+	private boolean isEnable = false;
 
-    protected void setEnable(boolean enable) {
-        isEnable = enable;
-    }
+	protected static <T extends BaseComponent> void reflectionSystemPlayerConstructor(T object, Player player, InitializeType type) {
+		try {
+			var method = ReflectionRecursive.getDeclaredMethod(object.getClass(), "systemPlayerConstructor", Player.class, InitializeType.class);
+			method.setAccessible(true);
+			method.invoke(object, player, type);
+		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
 
-    public boolean isEnable() {
-        return isEnable;
-    }
+	protected static <T extends BaseComponent> void reflectionSystemPlayerDestructor(T object, Player player, UninitializedType type) {
+		try {
+			var method = ReflectionRecursive.getDeclaredMethod(object.getClass(), "systemPlayerDestructor", Player.class, UninitializedType.class);
+			method.setAccessible(true);
+			method.invoke(object, player, type);
+		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
 
-    public UUID getUuid() {
-        return uuid;
-    }
+	public static ComponentType toType(ISessionComponent component) {
+		if (component instanceof Controller)
+			return ComponentType.CONTROLLER;
+		if (component instanceof Board)
+			return ComponentType.BOARD;
+		if (component instanceof Session)
+			return ComponentType.SESSION;
+		return ComponentType.OTHER;
+	}
 
-    public long getId() {
-        return id;
-    }
+	public boolean isEnable() {
+		return isEnable;
+	}
 
-    @Override
-    public void constructor() {}
+	protected void setEnable(boolean enable) {
+		isEnable = enable;
+	}
 
-    @Override
-    public void destructor() {}
+	public UUID getUuid() {
+		return uuid;
+	}
 
-    @Override
-    public void playerConstructor(Player player, InitializeType type) {}
+	public long getId() {
+		return id;
+	}
 
-    @Override
-    public void playerDestructor(Player player, UninitializedType type) {}
+	@Override
+	public void constructor() {
+	}
 
-    @Override
-    public PlayerDestructorLambdas getPlayerDestructorRecovery(Player forPlayer) {
-        return new PlayerDestructorLambdas();
-    }
-    protected void startBaseControllers() {}
+	@Override
+	public void destructor() {
+	}
 
+	@Override
+	public void playerConstructor(Player player, InitializeType type) {
+	}
 
-    private final String name = generateName();
+	@Override
+	public void playerDestructor(Player player, UninitializedType type) {
+	}
 
-    @Override
-    public @NotNull String getName() {
-        return name;
-    }
+	@Override
+	public PlayerDestructorLambdas getPlayerDestructorRecovery(Player forPlayer) {
+		return new PlayerDestructorLambdas();
+	}
 
-    private char getComponentTypeChar() {
-        if (this instanceof Controller) return 'C';
-        if (this instanceof Board) return 'B';
-        if (this instanceof Session) return 'S';
-        return '-';
-    }
+	protected void startBaseControllers() {
+	}
 
-    private String generateName() {
-        var currentJarFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
-        var plugin = PluginRegistry.getPlugin(currentJarFile.getName());
-        var pluginName = plugin != null ? plugin.getName() : currentJarFile.getName();
-        return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginName;
-    }
+	@Override
+	public @NotNull String getName() {
+		return name;
+	}
 
-    public static ComponentType toType(ISessionComponent component) {
-        if (component instanceof Controller) return ComponentType.CONTROLLER;
-        if (component instanceof Board) return ComponentType.BOARD;
-        if (component instanceof Session) return ComponentType.SESSION;
-        return ComponentType.OTHER;
-    }
+	private char getComponentTypeChar() {
+		if (this instanceof Controller)
+			return 'C';
+		if (this instanceof Board)
+			return 'B';
+		if (this instanceof Session)
+			return 'S';
+		return '-';
+	}
 
+	private String generateName() {
+		var currentJarFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
+		var plugin = PluginRegistry.getPlugin(currentJarFile.getName());
+		var pluginName = plugin != null ? plugin.getName() : currentJarFile.getName();
+		return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginName;
+	}
 }

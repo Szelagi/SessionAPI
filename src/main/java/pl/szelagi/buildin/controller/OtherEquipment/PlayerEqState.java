@@ -11,80 +11,78 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class PlayerEqState extends PlayerState implements Serializable {
-    public PlayerEqState(Player player) {
-        super(player);
-    }
-    private ItemStackArrayAdapted contents;
-    private PotionEffectArrayAdapted potionEffects;
-    private double health;
-    private double healthScale;
-    private int foodLevel;
-    private float saturation;
-    private int totalExperience;
-    private int level;
-    private float exp;
+	private ItemStackArrayAdapted contents;
+	private PotionEffectArrayAdapted potionEffects;
+	private double health;
+	private double healthScale;
+	private int foodLevel;
+	private float saturation;
+	private int totalExperience;
+	private int level;
+	private float exp;
 
-    public void save() {
-        this.contents = new ItemStackArrayAdapted(
-                getPlayer().getInventory().getContents()
-        );
-        this.potionEffects = new PotionEffectArrayAdapted(
-                getPlayer().getActivePotionEffects().toArray(PotionEffect[]::new)
-        );
-        this.health = getPlayer().getHealth();
-        this.healthScale = getPlayer().getHealthScale();
-        this.foodLevel = getPlayer().getFoodLevel();
-        this.saturation = getPlayer().getSaturation();
-        this.totalExperience = getPlayer().getTotalExperience();
-        this.level = getPlayer().getLevel();
-        this.exp = getPlayer().getExp();
-    }
+	public PlayerEqState(Player player) {
+		super(player);
+	}
 
-    public void load(Player player) {
-        player.getInventory().setContents(getContents());
-        player.clearActivePotionEffects();
-        player.addPotionEffects(Arrays.asList(getPotionEffects()));
-        player.setHealthScale(healthScale);
-        player.setHealth(health);
-        player.setFoodLevel(foodLevel);
-        player.setSaturation(saturation);
-        player.setTotalExperience(totalExperience);
-        player.setLevel(level);
-        player.setExp(exp);
-    }
+	public void save() {
+		this.contents = new ItemStackArrayAdapted(getPlayer().getInventory().getContents());
+		this.potionEffects = new PotionEffectArrayAdapted(getPlayer().getActivePotionEffects().toArray(PotionEffect[]::new));
+		this.health = getPlayer().getHealth();
+		this.healthScale = getPlayer().getHealthScale();
+		this.foodLevel = getPlayer().getFoodLevel();
+		this.saturation = getPlayer().getSaturation();
+		this.totalExperience = getPlayer().getTotalExperience();
+		this.level = getPlayer().getLevel();
+		this.exp = getPlayer().getExp();
+	}
 
-    public ItemStack[] getContents() {
-        return contents.getItemStacks();
-    }
+	public void load(Player player) {
+		player.getInventory().setContents(getContents());
+		player.clearActivePotionEffects();
+		player.addPotionEffects(Arrays.asList(getPotionEffects()));
+		player.setHealthScale(healthScale);
+		player.setHealth(health);
+		player.setFoodLevel(foodLevel);
+		player.setSaturation(saturation);
+		player.setTotalExperience(totalExperience);
+		player.setLevel(level);
+		player.setExp(exp);
+	}
 
-    public PotionEffect[] getPotionEffects() {
-        return potionEffects.getPotionEffects();
-    }
+	public ItemStack[] getContents() {
+		return contents.getItemStacks();
+	}
 
-    public double getHealth() {
-        return health;
-    }
+	public PotionEffect[] getPotionEffects() {
+		return potionEffects.getPotionEffects();
+	}
 
-    public int getFoodLevel() {
-        return foodLevel;
-    }
+	public double getHealth() {
+		return health;
+	}
 
-    public float getSaturation() {
-        return saturation;
-    }
+	public int getFoodLevel() {
+		return foodLevel;
+	}
 
-    public int getTotalExperience() {
-        return totalExperience;
-    }
+	public float getSaturation() {
+		return saturation;
+	}
 
-    public double getHealthScale() {
-        return healthScale;
-    }
-    public int getLevel() {
-        return level;
-    }
+	public int getTotalExperience() {
+		return totalExperience;
+	}
 
-    public float getExp() {
-        return exp;
-    }
+	public double getHealthScale() {
+		return healthScale;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public float getExp() {
+		return exp;
+	}
 }

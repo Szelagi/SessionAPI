@@ -11,17 +11,20 @@ import pl.szelagi.util.timespigot.Time;
 import pl.szelagi.world.SessionWorldManager;
 
 public class SessionWatchDogListener implements Listener {
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
 
-        var session = SessionManager.getSession(event.getPlayer());
-        if (session == null) return;
-        SessionWatchDogController controller = ControllerManager.getFirstController(session, SessionWatchDogController.class);
-        if (controller == null) return;
+		var session = SessionManager.getSession(event.getPlayer());
+		if (session == null)
+			return;
+		SessionWatchDogController controller = ControllerManager.getFirstController(session, SessionWatchDogController.class);
+		if (controller == null)
+			return;
 
-        controller.getProcess().runControlledTaskLater(() -> {
-            if (event.getPlayer().getWorld().getName().equals(SessionWorldManager.getSessionWorld().getName())) return;
-            controller.getSession().stop(new ExceptionCause("player illegal teleportation " + event.getPlayer().getWorld().getName() + " must be in " + SessionWorldManager.getSessionWorld().getName()));
-        }, Time.Ticks(10));
-    }
+		controller.getProcess().runControlledTaskLater(() -> {
+			if (event.getPlayer().getWorld().getName().equals(SessionWorldManager.getSessionWorld().getName()))
+				return;
+			controller.getSession().stop(new ExceptionCause("player illegal teleportation " + event.getPlayer().getWorld().getName() + " must be in " + SessionWorldManager.getSessionWorld().getName()));
+		}, Time.Ticks(10));
+	}
 }

@@ -6,14 +6,13 @@ import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
 
 public class NoNaturalSpawnController extends Controller {
-    public NoNaturalSpawnController(ISessionComponent component) {
-        super(component);
-    }
+	public NoNaturalSpawnController(ISessionComponent component) {
+		super(component);
+	}
 
-    @Nullable
-    @Override
-    public Listener getListener() {
-        return new NoNaturalSpawnListener();
-    }
-
+	@Nullable
+	@Override
+	public Listener getListener() {
+		return new NoNaturalSpawnListener();
+	}
 }

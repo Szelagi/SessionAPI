@@ -26,189 +26,181 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 public interface ISchematicMethods {
-    private static void showSchematicError(String error) {
-        String errorMessage = "§4[SCHEMATIC ERROR] §f" + error;
-        for (Player player : Bukkit.getServer().getOnlinePlayers())
-            if (player.isOp())
-                player.sendMessage(errorMessage);
-        Bukkit.getServer().getConsoleSender().sendMessage(errorMessage);
-    }
+	private static void showSchematicError(String error) {
+		String errorMessage = "§4[SCHEMATIC ERROR] §f" + error;
+		for (Player player : Bukkit.getServer().getOnlinePlayers())
+			if (player.isOp())
+				player.sendMessage(errorMessage);
+		Bukkit.getServer().getConsoleSender().sendMessage(errorMessage);
+	}
 
-    static ISpatial toSchematicSpatial(@NotNull String filePath, @NotNull ISpatial spatial) {
-        return toSchematicSpatialCore(filePath, spatial.getCenterBlockLocation());
-    }
+	static ISpatial toSchematicSpatial(@NotNull String filePath, @NotNull ISpatial spatial) {
+		return toSchematicSpatialCore(filePath, spatial.getCenterBlockLocation());
+	}
 
-    static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
-        loadAndPlaceSchematic(filePath, ISpatial.getCenterBlockLocation());
-    }
-    static void copyAndSaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
-        copyAndSaveSchematicCore(filePath, ISpatial.getFirstPoint(), ISpatial.getSecondPoint(), ISpatial.getCenter());
-    }
+	static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
+		loadAndPlaceSchematic(filePath, ISpatial.getCenterBlockLocation());
+	}
 
-    static void emptySaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial, Location toLocation) throws SchematicException {
-        emptySaveSchematicCore(filePath, ISpatial.getFirstPoint(), ISpatial.getSecondPoint(), toLocation);
-    }
+	static void copyAndSaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
+		copyAndSaveSchematicCore(filePath, ISpatial.getFirstPoint(), ISpatial.getSecondPoint(), ISpatial.getCenter());
+	}
 
-    static void copyAndSaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial, @NotNull Location toLocation) throws SchematicException {
-        copyAndSaveSchematicCore(filePath, ISpatial.getFirstPoint(), ISpatial.getSecondPoint(), toLocation);
-    }
+	static void emptySaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial, Location toLocation) throws SchematicException {
+		emptySaveSchematicCore(filePath, ISpatial.getFirstPoint(), ISpatial.getSecondPoint(), toLocation);
+	}
 
-    static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull Location location) throws SchematicException {
-        try {
-            loadAndPlaceSchematicCore(filePath, location);
-        } catch (SchematicException schematicException) {
-            showSchematicError("load: filePath: " + filePath + " Exception: " + schematicException.getMessage());
-            throw schematicException;
-        };
-    }
-    static void copyAndSaveSchematic(@NotNull String filePath, @NotNull Location location1, @NotNull Location location2, @NotNull Location locationCenter) {
-        try {
-            copyAndSaveSchematicCore(filePath, location1, location2, locationCenter);
-        } catch (SchematicException schematicException) {
-            showSchematicError("save: filePath: " + filePath + " Exception: " + schematicException.getMessage());
-            throw schematicException;
-        }
-    }
-    private static void loadAndPlaceSchematicCore(@NotNull String filePath, @NotNull Location toLocation) throws SchematicException {
-        File file = new File(filePath);
-        ClipboardFormat format = ClipboardFormats.findByFile(file);
-        World adaptedWorld = BukkitAdapter.adapt(toLocation.getWorld());
-        Clipboard clipboard;
-        FileInputStream fis;
-        ClipboardReader reader;
-        BlockVector3 to = BukkitAdapter.asBlockVector(toLocation);
-        try {
-            fis = new FileInputStream(file);
-            assert format != null;
-            reader = format.getReader(fis);
-            clipboard = reader.read();
-            try (EditSession editSession = WorldEdit.getInstance().newEditSession(adaptedWorld)) {
-                Operation operation = new ClipboardHolder(clipboard)
-                        .createPaste(editSession)
-                        .copyEntities(false)
-                        .copyBiomes(false)
-                        .to(to)
-                        // configure here
-                        .build();
-                Operations.complete(operation);
-            } catch (WorldEditException e) {
-                throw new SchematicException(e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new SchematicException(e.getMessage());
-        }
-    }
+	static void copyAndSaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial, @NotNull Location toLocation) throws SchematicException {
+		copyAndSaveSchematicCore(filePath, ISpatial.getFirstPoint(), ISpatial.getSecondPoint(), toLocation);
+	}
 
-    @Nullable
-    private static ISpatial toSchematicSpatialCore(@NotNull String filePath, @NotNull Location toLocation) throws SchematicException {
-        File file = new File(filePath);
-        Clipboard clipboard;
-        World adaptedWorld = BukkitAdapter.adapt(toLocation.getWorld());
-        var adaptedTo = BukkitAdapter.asBlockVector(toLocation);
+	static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull Location location) throws SchematicException {
+		try {
+			loadAndPlaceSchematicCore(filePath, location);
+		} catch (SchematicException schematicException) {
+			showSchematicError("load: filePath: " + filePath + " Exception: " + schematicException.getMessage());
+			throw schematicException;
+		}
+	}
 
-        ClipboardFormat format = ClipboardFormats.findByFile(file);
-        assert format != null;
-        try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
-            clipboard = reader.read();
+	static void copyAndSaveSchematic(@NotNull String filePath, @NotNull Location location1, @NotNull Location location2, @NotNull Location locationCenter) {
+		try {
+			copyAndSaveSchematicCore(filePath, location1, location2, locationCenter);
+		} catch (SchematicException schematicException) {
+			showSchematicError("save: filePath: " + filePath + " Exception: " + schematicException.getMessage());
+			throw schematicException;
+		}
+	}
 
-            var region = new CuboidRegion(adaptedWorld, clipboard.getMinimumPoint(), clipboard.getMinimumPoint());
-            BlockArrayClipboard n_clipboard = new BlockArrayClipboard(region);
-            n_clipboard.setOrigin(adaptedTo);
+	private static void loadAndPlaceSchematicCore(@NotNull String filePath, @NotNull Location toLocation) throws SchematicException {
+		File file = new File(filePath);
+		ClipboardFormat format = ClipboardFormats.findByFile(file);
+		World adaptedWorld = BukkitAdapter.adapt(toLocation.getWorld());
+		Clipboard clipboard;
+		FileInputStream fis;
+		ClipboardReader reader;
+		BlockVector3 to = BukkitAdapter.asBlockVector(toLocation);
+		try {
+			fis = new FileInputStream(file);
+			assert format != null;
+			reader = format.getReader(fis);
+			clipboard = reader.read();
+			try (EditSession editSession = WorldEdit.getInstance().newEditSession(adaptedWorld)) {
+				Operation operation = new ClipboardHolder(clipboard).createPaste(editSession).copyEntities(false).copyBiomes(false).to(to)
+						// configure here
+						.build();
+				Operations.complete(operation);
+			} catch (WorldEditException e) {
+				throw new SchematicException(e.getMessage());
+			}
+		} catch (Exception e) {
+			throw new SchematicException(e.getMessage());
+		}
+	}
 
+	@Nullable
+	private static ISpatial toSchematicSpatialCore(@NotNull String filePath, @NotNull Location toLocation) throws SchematicException {
+		File file = new File(filePath);
+		Clipboard clipboard;
+		World adaptedWorld = BukkitAdapter.adapt(toLocation.getWorld());
+		var adaptedTo = BukkitAdapter.asBlockVector(toLocation);
 
+		ClipboardFormat format = ClipboardFormats.findByFile(file);
+		assert format != null;
+		try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+			clipboard = reader.read();
 
-            var min = BukkitAdapter.adapt(toLocation.getWorld(), region.getMinimumPoint());
-            var max = BukkitAdapter.adapt(toLocation.getWorld(), region.getMaximumPoint());
+			var region = new CuboidRegion(adaptedWorld, clipboard.getMinimumPoint(), clipboard.getMinimumPoint());
+			BlockArrayClipboard n_clipboard = new BlockArrayClipboard(region);
+			n_clipboard.setOrigin(adaptedTo);
 
-            return new ISpatial() {
-                @Override
-                public @NotNull Location getFirstPoint() {
-                    return min;
-                }
+			var min = BukkitAdapter.adapt(toLocation.getWorld(), region.getMinimumPoint());
+			var max = BukkitAdapter.adapt(toLocation.getWorld(), region.getMaximumPoint());
 
-                @Override
-                public @NotNull Location getSecondPoint() {
-                    return max;
-                }
-            };
-        } catch (Exception e) {
-            throw new SchematicException(e.getMessage());
-        }
-    }
+			return new ISpatial() {
+				@Override
+				public @NotNull Location getFirstPoint() {
+					return min;
+				}
 
-    private static void copyAndSaveSchematicCore(@NotNull String filePath,
-                                                 @NotNull Location location1,
-                                                 @NotNull Location location2,
-                                                 @NotNull Location toLocation) throws SchematicException {
-        var file = new File(filePath);
-        var world = BukkitAdapter.adapt(location1.getWorld());
-        var loc1 = BukkitAdapter.asBlockVector(location1);
-        var loc2 = BukkitAdapter.asBlockVector(location2);
-        var to = BukkitAdapter.asBlockVector(toLocation);
+				@Override
+				public @NotNull Location getSecondPoint() {
+					return max;
+				}
+			};
+		} catch (Exception e) {
+			throw new SchematicException(e.getMessage());
+		}
+	}
 
-        BlockVector3 min;
-        BlockVector3 max;
-        if (location1.getBlockY() < location2.getBlockY()) {
-            min = loc1;
-            max = loc2;
-        } else {
-            min = loc2;
-            max = loc1;
-        }
+	private static void copyAndSaveSchematicCore(@NotNull String filePath, @NotNull Location location1, @NotNull Location location2, @NotNull Location toLocation) throws SchematicException {
+		var file = new File(filePath);
+		var world = BukkitAdapter.adapt(location1.getWorld());
+		var loc1 = BukkitAdapter.asBlockVector(location1);
+		var loc2 = BukkitAdapter.asBlockVector(location2);
+		var to = BukkitAdapter.asBlockVector(toLocation);
 
-        CuboidRegion region = new CuboidRegion(world, min, max);
-        BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-        clipboard.setOrigin(to);
+		BlockVector3 min;
+		BlockVector3 max;
+		if (location1.getBlockY() < location2.getBlockY()) {
+			min = loc1;
+			max = loc2;
+		} else {
+			min = loc2;
+			max = loc1;
+		}
 
-        var forwardExtentCopy = new ForwardExtentCopy(world, region, clipboard, region.getMinimumPoint());
+		CuboidRegion region = new CuboidRegion(world, min, max);
+		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+		clipboard.setOrigin(to);
 
-        forwardExtentCopy.setCopyingBiomes(false);
-        forwardExtentCopy.setCopyingEntities(false);
-        forwardExtentCopy.setRemovingEntities(true);
+		var forwardExtentCopy = new ForwardExtentCopy(world, region, clipboard, region.getMinimumPoint());
 
-        try {
-            Operations.complete(forwardExtentCopy);
-            try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
-                writer.write(clipboard);
-            } catch (Exception e) {
-                throw new SchematicException(e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new SchematicException(e.getMessage());
-        }
-    }
-    private static void emptySaveSchematicCore(@NotNull String filePath,
-                                                 @NotNull Location location1,
-                                                 @NotNull Location location2,
-                                                 @NotNull Location toLocation) throws SchematicException {
-        var file = new File(filePath);
-        var world = BukkitAdapter.adapt(location1.getWorld());
-        var loc1 = BukkitAdapter.asBlockVector(location1);
-        var loc2 = BukkitAdapter.asBlockVector(location2);
-        var to = BukkitAdapter.asBlockVector(toLocation);
+		forwardExtentCopy.setCopyingBiomes(false);
+		forwardExtentCopy.setCopyingEntities(false);
+		forwardExtentCopy.setRemovingEntities(true);
 
-        BlockVector3 min;
-        BlockVector3 max;
-        if (location1.getBlockY() < location2.getBlockY()) {
-            min = loc1;
-            max = loc2;
-        } else {
-            min = loc2;
-            max = loc1;
-        }
+		try {
+			Operations.complete(forwardExtentCopy);
+			try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
+				writer.write(clipboard);
+			} catch (Exception e) {
+				throw new SchematicException(e.getMessage());
+			}
+		} catch (Exception e) {
+			throw new SchematicException(e.getMessage());
+		}
+	}
 
-        CuboidRegion region = new CuboidRegion(world, min, max);
-        BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-        clipboard.setOrigin(to);
+	private static void emptySaveSchematicCore(@NotNull String filePath, @NotNull Location location1, @NotNull Location location2, @NotNull Location toLocation) throws SchematicException {
+		var file = new File(filePath);
+		var world = BukkitAdapter.adapt(location1.getWorld());
+		var loc1 = BukkitAdapter.asBlockVector(location1);
+		var loc2 = BukkitAdapter.asBlockVector(location2);
+		var to = BukkitAdapter.asBlockVector(toLocation);
 
-        try {
-            try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
-                writer.write(clipboard);
-            } catch (Exception e) {
-                throw new SchematicException(e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new SchematicException(e.getMessage());
-        }
-    }
+		BlockVector3 min;
+		BlockVector3 max;
+		if (location1.getBlockY() < location2.getBlockY()) {
+			min = loc1;
+			max = loc2;
+		} else {
+			min = loc2;
+			max = loc1;
+		}
+
+		CuboidRegion region = new CuboidRegion(world, min, max);
+		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+		clipboard.setOrigin(to);
+
+		try {
+			try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
+				writer.write(clipboard);
+			} catch (Exception e) {
+				throw new SchematicException(e.getMessage());
+			}
+		} catch (Exception e) {
+			throw new SchematicException(e.getMessage());
+		}
+	}
 }

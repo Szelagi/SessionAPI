@@ -14,36 +14,35 @@ import pl.szelagi.world.SessionWorldManager;
 
 import java.util.ArrayList;
 
-
 public class BoardWatchDogListener implements Listener {
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
-        var previousLocation = event.getPlayer().getLocation().clone();
-        var playerSession = SessionManager.getSession(event.getPlayer());
-        if (playerSession != null) {
-            ArrayList<BoardWatchDogController> controllers = ControllerManager.getControllers(playerSession, BoardWatchDogController.class);
-            for (var controller : controllers) {
-                controller.getProcess().runControlledTaskLater(() -> {
-                    controller.stopWhenPlayerExitSpace(event.getPlayer());
-                }, Time.Ticks(1));
-            }
-        } else {
-            Bukkit.getServer().getScheduler().runTaskLater(SessionAPI.getInstance(), () -> {
-                if (event.getPlayer().getWorld().getName().equals(SessionWorldManager.getSessionWorld().getName())) {
-                    for (var session : SessionManager.getSessions()) {
-                        ArrayList<BoardWatchDogController> controllers = ControllerManager.getControllers(session, BoardWatchDogController.class);
-                        for (var controller : controllers) {
-                            controller.warnWhenAlienInSpace(event.getPlayer(), previousLocation);
-                            return;
-                        }
-                    }
-                }
-            }, 1);
-        }
-    }
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+	public void onPlayerTeleport(PlayerTeleportEvent event) {
+		var previousLocation = event.getPlayer().getLocation().clone();
+		var playerSession = SessionManager.getSession(event.getPlayer());
+		if (playerSession != null) {
+			ArrayList<BoardWatchDogController> controllers = ControllerManager.getControllers(playerSession, BoardWatchDogController.class);
+			for (var controller : controllers) {
+				controller.getProcess().runControlledTaskLater(() -> {
+					controller.stopWhenPlayerExitSpace(event.getPlayer());
+				}, Time.Ticks(1));
+			}
+		} else {
+			Bukkit.getServer().getScheduler().runTaskLater(SessionAPI.getInstance(), () -> {
+				if (event.getPlayer().getWorld().getName().equals(SessionWorldManager.getSessionWorld().getName())) {
+					for (var session : SessionManager.getSessions()) {
+						ArrayList<BoardWatchDogController> controllers = ControllerManager.getControllers(session, BoardWatchDogController.class);
+						for (var controller : controllers) {
+							controller.warnWhenAlienInSpace(event.getPlayer(), previousLocation);
+							return;
+						}
+					}
+				}
+			}, 1);
+		}
+	}
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+	public void onPlayerRespawn(PlayerRespawnEvent event) {
 
-    }
+	}
 }

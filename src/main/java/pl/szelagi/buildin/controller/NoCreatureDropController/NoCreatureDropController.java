@@ -6,14 +6,13 @@ import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
 
 public class NoCreatureDropController extends Controller {
-    public NoCreatureDropController(ISessionComponent component) {
-        super(component);
-    }
+	public NoCreatureDropController(ISessionComponent component) {
+		super(component);
+	}
 
-    @Nullable
-    @Override
-    public Listener getListener() {
-        return new NoCreatureDropListener();
-    }
-
+	@Nullable
+	@Override
+	public Listener getListener() {
+		return new NoCreatureDropListener();
+	}
 }

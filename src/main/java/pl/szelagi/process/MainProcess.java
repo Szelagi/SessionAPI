@@ -9,167 +9,171 @@ import pl.szelagi.util.timespigot.Time;
 import java.util.ArrayList;
 
 public class MainProcess extends Process {
-    private final Session session;
-    public MainProcess(Session session) {
-        super(session.getPlugin());
-        this.session = session;
-    }
+	private final Session session;
 
-    protected Session getDungeon() {
-        return session;
-    }
+	public MainProcess(Session session) {
+		super(session.getPlugin());
+		this.session = session;
+	}
 
-    protected void forceStopTasks(ArrayList<BukkitTask> tasks) {
-        ArrayList<BukkitTask> cloneArrayListTasks = new ArrayList<>();
-        cloneArrayListTasks.addAll(tasks);
+	protected Session getDungeon() {
+		return session;
+	}
 
-        for (var task : cloneArrayListTasks ) {
-            getTasks().remove(task);
-            task.cancel();
-        }
-    }
+	protected void forceStopTasks(ArrayList<BukkitTask> tasks) {
+		ArrayList<BukkitTask> cloneArrayListTasks = new ArrayList<>();
+		cloneArrayListTasks.addAll(tasks);
 
-    protected void forceStopControllers(ArrayList<Controller> controllers) {
-        ArrayList<Controller> cloneArrayListControllers = new ArrayList<>();
-        cloneArrayListControllers.addAll(controllers);
+		for (var task : cloneArrayListTasks) {
+			getTasks().remove(task);
+			task.cancel();
+		}
+	}
 
-        for (var controller : cloneArrayListControllers ) {
-            getControllers().remove(controller);
-            controller.stop();
-        }
-    }
+	protected void forceStopControllers(ArrayList<Controller> controllers) {
+		ArrayList<Controller> cloneArrayListControllers = new ArrayList<>();
+		cloneArrayListControllers.addAll(controllers);
 
-    @Override
-    public void destroy() {
-        stopAllTasks();
-        stopAllControllers();
-    }
+		for (var controller : cloneArrayListControllers) {
+			getControllers().remove(controller);
+			controller.stop();
+		}
+	}
 
-    @Override
-    public void optimiseTasks() {
-        boolean isQueued;
-        boolean isRunning;
-        boolean isExist;
-        boolean isCanceled;
+	@Override
+	public void destroy() {
+		stopAllTasks();
+		stopAllControllers();
+	}
 
-        ArrayList<BukkitTask> cloneArrayListTasks = new ArrayList<>();
-        cloneArrayListTasks.addAll(getTasks());
+	@Override
+	public void optimiseTasks() {
+		boolean isQueued;
+		boolean isRunning;
+		boolean isExist;
+		boolean isCanceled;
 
-        for (var task : cloneArrayListTasks) {
-            isQueued = getPlugin().getServer().getScheduler().isQueued(task.getTaskId());
-            isRunning = getPlugin().getServer().getScheduler().isCurrentlyRunning(task.getTaskId());
-            isExist = isQueued || isRunning;
-            isCanceled = task.isCancelled();
-            if (isCanceled || !isExist) {
-                if (!isCanceled) task.cancel();
-                getTasks().remove(task);
-            }
-        }
-    }
+		ArrayList<BukkitTask> cloneArrayListTasks = new ArrayList<>();
+		cloneArrayListTasks.addAll(getTasks());
 
-    @Override
-    protected void stopAllControllers() {
-        ArrayList<Controller> cloneArrayListControllers = new ArrayList<>();
-        cloneArrayListControllers.addAll(getControllers());
+		for (var task : cloneArrayListTasks) {
+			isQueued = getPlugin().getServer().getScheduler().isQueued(task.getTaskId());
+			isRunning = getPlugin().getServer().getScheduler().isCurrentlyRunning(task.getTaskId());
+			isExist = isQueued || isRunning;
+			isCanceled = task.isCancelled();
+			if (isCanceled || !isExist) {
+				if (!isCanceled)
+					task.cancel();
+				getTasks().remove(task);
+			}
+		}
+	}
 
-        for (var controller : cloneArrayListControllers ) {
-            controller.stop();
-        }
-    }
+	@Override
+	protected void stopAllControllers() {
+		ArrayList<Controller> cloneArrayListControllers = new ArrayList<>();
+		cloneArrayListControllers.addAll(getControllers());
 
-    @Override
-    protected void stopAllTasks() {
-        ArrayList<BukkitTask> cloneArrayListTasks = new ArrayList<>();
-        cloneArrayListTasks.addAll(getTasks());
+		for (var controller : cloneArrayListControllers) {
+			controller.stop();
+		}
+	}
 
-        for (var task : cloneArrayListTasks) {
-            task.cancel();
-        }
-    }
+	@Override
+	protected void stopAllTasks() {
+		ArrayList<BukkitTask> cloneArrayListTasks = new ArrayList<>();
+		cloneArrayListTasks.addAll(getTasks());
 
-    @Override
-    public void registerController(Controller controller) {
-        getControllers().add(controller);
-    }
+		for (var task : cloneArrayListTasks) {
+			task.cancel();
+		}
+	}
 
-    @Override
-    public void unregisterController(Controller controller) {
-        getControllers().remove(controller);
-    }
-    @Override
-    public @NotNull ProcessTask runControlledTask(@NotNull Runnable runnable) {
-        var task = runControlledBukkitTask(runnable);
-        return new ProcessTask(this, task);
-    }
-    protected @NotNull BukkitTask runControlledBukkitTask(@NotNull Runnable runnable) {
-        var bukkitTask = getPlugin().getServer().getScheduler().runTask(getPlugin(), runnable);
-        getTasks().add(bukkitTask);
-        return bukkitTask;
-    }
+	@Override
+	public void registerController(Controller controller) {
+		getControllers().add(controller);
+	}
 
-    @Override
-    public @NotNull ProcessTask runControlledTaskAsynchronously(@NotNull Runnable runnable) {
-        var task = runControlledBukkitTaskAsynchronously(runnable);
-        return new ProcessTask(this, task);
-    }
+	@Override
+	public void unregisterController(Controller controller) {
+		getControllers().remove(controller);
+	}
 
-    protected @NotNull BukkitTask runControlledBukkitTaskAsynchronously(@NotNull Runnable runnable) {
-        var bukkitTask = getPlugin().getServer().getScheduler().runTaskAsynchronously(getPlugin(), runnable);
-        getTasks().add(bukkitTask);
-        return bukkitTask;
-    }
+	@Override
+	public @NotNull ProcessTask runControlledTask(@NotNull Runnable runnable) {
+		var task = runControlledBukkitTask(runnable);
+		return new ProcessTask(this, task);
+	}
 
-    @Override
-    public @NotNull ProcessTask runControlledTaskLater(@NotNull Runnable runnable, @NotNull Time laterTime) {
-        var task = runControlledBukkitTaskLater(runnable, laterTime);
-        return new ProcessTask(this, task);
-    }
+	protected @NotNull BukkitTask runControlledBukkitTask(@NotNull Runnable runnable) {
+		var bukkitTask = getPlugin().getServer().getScheduler().runTask(getPlugin(), runnable);
+		getTasks().add(bukkitTask);
+		return bukkitTask;
+	}
 
-    protected @NotNull BukkitTask runControlledBukkitTaskLater(@NotNull Runnable runnable, @NotNull Time laterTime) {
-        var bukkitTask = getPlugin().getServer().getScheduler().runTaskLater(getPlugin(), runnable, laterTime.toTicks());
-        getTasks().add(bukkitTask);
-        return bukkitTask;
-    }
+	@Override
+	public @NotNull ProcessTask runControlledTaskAsynchronously(@NotNull Runnable runnable) {
+		var task = runControlledBukkitTaskAsynchronously(runnable);
+		return new ProcessTask(this, task);
+	}
 
-    @Override
-    public @NotNull ProcessTask runControlledTaskLaterAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime) {
-        var task = runControlledBukkitTaskLaterAsynchronously(runnable, laterTime);
-        return new ProcessTask(this, task);
-    }
+	protected @NotNull BukkitTask runControlledBukkitTaskAsynchronously(@NotNull Runnable runnable) {
+		var bukkitTask = getPlugin().getServer().getScheduler().runTaskAsynchronously(getPlugin(), runnable);
+		getTasks().add(bukkitTask);
+		return bukkitTask;
+	}
 
-    protected @NotNull BukkitTask runControlledBukkitTaskLaterAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime) {
-        var bukkitTask = getPlugin().getServer().getScheduler().runTaskLaterAsynchronously(getPlugin(), runnable, laterTime.toTicks());
-        getTasks().add(bukkitTask);
-        return bukkitTask;
-    }
+	@Override
+	public @NotNull ProcessTask runControlledTaskLater(@NotNull Runnable runnable, @NotNull Time laterTime) {
+		var task = runControlledBukkitTaskLater(runnable, laterTime);
+		return new ProcessTask(this, task);
+	}
 
-    @Override
-    public @NotNull ProcessTask runControlledTaskTimer(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
-        var task = runControlledBukkitTaskTimer(runnable, laterTime, repeatTime);
-        return new ProcessTask(this, task);
-    }
+	protected @NotNull BukkitTask runControlledBukkitTaskLater(@NotNull Runnable runnable, @NotNull Time laterTime) {
+		var bukkitTask = getPlugin().getServer().getScheduler().runTaskLater(getPlugin(), runnable, laterTime.toTicks());
+		getTasks().add(bukkitTask);
+		return bukkitTask;
+	}
 
-    protected @NotNull BukkitTask runControlledBukkitTaskTimer(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
-        var bukkitTask = getPlugin().getServer().getScheduler().runTaskTimer(getPlugin(), runnable, laterTime.toTicks(), repeatTime.toTicks());
-        getTasks().add(bukkitTask);
-        return bukkitTask;
-    }
+	@Override
+	public @NotNull ProcessTask runControlledTaskLaterAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime) {
+		var task = runControlledBukkitTaskLaterAsynchronously(runnable, laterTime);
+		return new ProcessTask(this, task);
+	}
 
-    @Override
-    public @NotNull ProcessTask runControlledTaskTimerAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
-        var task = runControlledBukkitTaskTimerAsynchronously(runnable, laterTime, repeatTime);
-        return new ProcessTask(this, task);
-    }
+	protected @NotNull BukkitTask runControlledBukkitTaskLaterAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime) {
+		var bukkitTask = getPlugin().getServer().getScheduler().runTaskLaterAsynchronously(getPlugin(), runnable, laterTime.toTicks());
+		getTasks().add(bukkitTask);
+		return bukkitTask;
+	}
 
-    protected @NotNull BukkitTask runControlledBukkitTaskTimerAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
-        var bukkitTask = getPlugin().getServer().getScheduler().runTaskTimerAsynchronously(getPlugin(), runnable, laterTime.toTicks(), repeatTime.toTicks());
-        getTasks().add(bukkitTask);
-        return bukkitTask;
-    }
+	@Override
+	public @NotNull ProcessTask runControlledTaskTimer(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
+		var task = runControlledBukkitTaskTimer(runnable, laterTime, repeatTime);
+		return new ProcessTask(this, task);
+	}
 
-    @Override
-    public void stopControlledTask(@NotNull BukkitTask bukkitTask) {
-        bukkitTask.cancel();
-        getTasks().remove(bukkitTask);
-    }
+	protected @NotNull BukkitTask runControlledBukkitTaskTimer(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
+		var bukkitTask = getPlugin().getServer().getScheduler().runTaskTimer(getPlugin(), runnable, laterTime.toTicks(), repeatTime.toTicks());
+		getTasks().add(bukkitTask);
+		return bukkitTask;
+	}
+
+	@Override
+	public @NotNull ProcessTask runControlledTaskTimerAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
+		var task = runControlledBukkitTaskTimerAsynchronously(runnable, laterTime, repeatTime);
+		return new ProcessTask(this, task);
+	}
+
+	protected @NotNull BukkitTask runControlledBukkitTaskTimerAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime) {
+		var bukkitTask = getPlugin().getServer().getScheduler().runTaskTimerAsynchronously(getPlugin(), runnable, laterTime.toTicks(), repeatTime.toTicks());
+		getTasks().add(bukkitTask);
+		return bukkitTask;
+	}
+
+	@Override
+	public void stopControlledTask(@NotNull BukkitTask bukkitTask) {
+		bukkitTask.cancel();
+		getTasks().remove(bukkitTask);
+	}
 }

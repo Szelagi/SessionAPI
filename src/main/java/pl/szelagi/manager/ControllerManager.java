@@ -17,115 +17,109 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ControllerManager {
-    private static final HashMap<String, Listener> CONTROLLER_LISTENER_MAP = new HashMap<>();
-    private static final HashMap<String, ArrayList<Long>> ENABLE_CONTROLLER_ID_MAP = new HashMap<>();
-    private static JavaPlugin plugin;
+	private static final HashMap<String, Listener> CONTROLLER_LISTENER_MAP = new HashMap<>();
+	private static final HashMap<String, ArrayList<Long>> ENABLE_CONTROLLER_ID_MAP = new HashMap<>();
+	private static JavaPlugin plugin;
 
-    public static void initialize(JavaPlugin p) {
-        plugin = p;
-        class MyControllerManager implements Listener {
+	public static void initialize(JavaPlugin p) {
+		plugin = p;
+		class MyControllerManager implements Listener {
+			@EventHandler(ignoreCancelled = true)
+			public void onControllerStart(ControllerStartEvent event) {
+				ControllerManager.onControllerStart(event.getController());
+			}
 
-            @EventHandler(ignoreCancelled = true)
-            public void onControllerStart(ControllerStartEvent event) {
-                ControllerManager.onControllerStart(event.getController());
-            }
+			@EventHandler(ignoreCancelled = true)
+			public void onControllerStop(ControllerStopEvent event) {
+				ControllerManager.onControllerStop(event.getController());
+			}
+		}
+		Bukkit.getPluginManager().registerEvents(new MyControllerManager(), p);
+	}
 
-            @EventHandler(ignoreCancelled = true)
-            public void onControllerStop(ControllerStopEvent event) {
-                ControllerManager.onControllerStop(event.getController());
-            }
+	private static int controllerEnableCount(String name) {
+		var ids = ENABLE_CONTROLLER_ID_MAP.get(name);
+		if (ids == null)
+			return 0;
+		return ids.size();
+	}
 
-        }
-        Bukkit.getPluginManager().registerEvents(new MyControllerManager(), p);
-    }
+	public static void onControllerStart(Controller controller) {
+		var name = controller.getName();
+		var id = controller.getId();
+		var ids = ENABLE_CONTROLLER_ID_MAP.computeIfAbsent(name, k -> new ArrayList<>());
+		if (ids.contains(id))
+			return;
+		if (ids.isEmpty()) {
+			startControllerListener(controller);
+		}
+		ids.add(id);
+	}
 
-    private static int controllerEnableCount(String name) {
-        var ids = ENABLE_CONTROLLER_ID_MAP.get(name);
-        if (ids == null) return 0;
-        return ids.size();
-    }
-    public static void onControllerStart(Controller controller) {
-        var name = controller.getName();
-        var id = controller.getId();
-        var ids = ENABLE_CONTROLLER_ID_MAP.computeIfAbsent(name, k -> new ArrayList<>());
-        if (ids.contains(id)) return;
-        if (ids.isEmpty()) {
-            startControllerListener(controller);
-        }
-        ids.add(id);
-    }
-    public static void onControllerStop(Controller controller) {
-        var name = controller.getName();
-        var id = controller.getId();
-        var ids = ENABLE_CONTROLLER_ID_MAP.computeIfAbsent(name, k -> new ArrayList<>());
-        if (!ids.contains(id)) return;
-        ids.remove(id);
-        if (ids.isEmpty()) {
-            stopControllerListener(controller);
-            ENABLE_CONTROLLER_ID_MAP.remove(name); // added
-        }
-    }
-    private static void startControllerListener(Controller controller) {
-        var name = controller.getName();
-        var listener = CONTROLLER_LISTENER_MAP.get(name);
-        if (listener == null) {
-            listener = controller.getListener();
-            if (listener == null) return;
-            CONTROLLER_LISTENER_MAP.put(name, listener);
-        }
-        Bukkit.getPluginManager().registerEvents(listener, plugin);
-    }
-    private static void stopControllerListener(Controller controller) {
-        var name = controller.getName();
-        var listener = CONTROLLER_LISTENER_MAP.get(name);
-        if (listener == null) return;
-        HandlerList.unregisterAll(listener);
-        CONTROLLER_LISTENER_MAP.remove(name); // delete listener when is disable
-    }
+	public static void onControllerStop(Controller controller) {
+		var name = controller.getName();
+		var id = controller.getId();
+		var ids = ENABLE_CONTROLLER_ID_MAP.computeIfAbsent(name, k -> new ArrayList<>());
+		if (!ids.contains(id))
+			return;
+		ids.remove(id);
+		if (ids.isEmpty()) {
+			stopControllerListener(controller);
+			ENABLE_CONTROLLER_ID_MAP.remove(name); // added
+		}
+	}
 
-//    @NotNull
-//    public static <T extends Controller> ArrayList<T> getAllowListenerControllers(Session session, Class<?> classType) {
-//
-//    }
-//    @Nullable
-//    public static <T extends Controller> T getFirstAllowListenerController(Session session, Class<?> classType) {
-//
-//    }
+	private static void startControllerListener(Controller controller) {
+		var name = controller.getName();
+		var listener = CONTROLLER_LISTENER_MAP.get(name);
+		if (listener == null) {
+			listener = controller.getListener();
+			if (listener == null)
+				return;
+			CONTROLLER_LISTENER_MAP.put(name, listener);
+		}
+		Bukkit.getPluginManager().registerEvents(listener, plugin);
+	}
 
-    @NotNull
-    public static <T extends Controller> ArrayList<T> getAllControllers(@Nullable Session session,
-                                                                        @NotNull Class<T> classType) {
-        if (session == null) return new ArrayList<>();
-        var list = session.getMainProcess().getControllers().stream()
-                .filter(classType::isInstance)
-                .map(classType::cast)
-                .toList();
-        return new ArrayList<>(list);
-    }
+	private static void stopControllerListener(Controller controller) {
+		var name = controller.getName();
+		var listener = CONTROLLER_LISTENER_MAP.get(name);
+		if (listener == null)
+			return;
+		HandlerList.unregisterAll(listener);
+		CONTROLLER_LISTENER_MAP.remove(name); // delete listener when is disable
+	}
 
-    // Enable controller
-    @NotNull
-    public static <T extends Controller> ArrayList<T> getControllers(@Nullable Session session,
-                                                                     @NotNull Class<T> classType) {
-        if (session == null) return new ArrayList<>();
-        var list = session.getMainProcess().getControllers().stream()
-                .filter(BaseComponent::isEnable)
-                .filter(classType::isInstance)
-                .map(classType::cast)
-                .toList();
-        return new ArrayList<>(list);
-    }
+	//    @NotNull
+	//    public static <T extends Controller> ArrayList<T> getAllowListenerControllers(Session session, Class<?> classType) {
+	//
+	//    }
+	//    @Nullable
+	//    public static <T extends Controller> T getFirstAllowListenerController(Session session, Class<?> classType) {
+	//
+	//    }
 
-    @Nullable
-    public static <T extends Controller> T getFirstController(@Nullable Session session,
-                                                              @NotNull Class<T> classType) {
-        if (session == null) return null;
-        return session.getMainProcess().getControllers().stream()
-                .filter(BaseComponent::isEnable)
-                .filter(classType::isInstance)
-                .map(classType::cast)
-                .findFirst()
-                .orElse(null);
-    }
+	@NotNull
+	public static <T extends Controller> ArrayList<T> getAllControllers(@Nullable Session session, @NotNull Class<T> classType) {
+		if (session == null)
+			return new ArrayList<>();
+		var list = session.getMainProcess().getControllers().stream().filter(classType::isInstance).map(classType::cast).toList();
+		return new ArrayList<>(list);
+	}
 
+	// Enable controller
+	@NotNull
+	public static <T extends Controller> ArrayList<T> getControllers(@Nullable Session session, @NotNull Class<T> classType) {
+		if (session == null)
+			return new ArrayList<>();
+		var list = session.getMainProcess().getControllers().stream().filter(BaseComponent::isEnable).filter(classType::isInstance).map(classType::cast).toList();
+		return new ArrayList<>(list);
+	}
+
+	@Nullable
+	public static <T extends Controller> T getFirstController(@Nullable Session session, @NotNull Class<T> classType) {
+		if (session == null)
+			return null;
+		return session.getMainProcess().getControllers().stream().filter(BaseComponent::isEnable).filter(classType::isInstance).map(classType::cast).findFirst().orElse(null);
+	}
 }

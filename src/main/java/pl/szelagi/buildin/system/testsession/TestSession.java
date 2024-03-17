@@ -9,23 +9,22 @@ import pl.szelagi.component.session.Session;
 import java.util.ArrayList;
 
 public class TestSession extends Session {
-    public TestSession(JavaPlugin plugin, Player player) {
-        super(plugin, player);
-    }
+	public TestSession(JavaPlugin plugin, Player player) {
+		super(plugin, player);
+	}
 
-    public TestSession(JavaPlugin plugin, ArrayList<Player> players) {
-        super(plugin, players);
-    }
+	public TestSession(JavaPlugin plugin, ArrayList<Player> players) {
+		super(plugin, players);
+	}
 
-    @NotNull
-    @Override
-    protected Board getDefaultStartBoard() {
-        return new TestBoard(this);
-    }
+	@NotNull
+	@Override
+	protected Board getDefaultStartBoard() {
+		return new TestBoard(this);
+	}
 
-    @Override
-    public @NotNull String getName() {
-        return "SystemTestSession";
-    }
-
+	@Override
+	public @NotNull String getName() {
+		return "SystemTestSession";
+	}
 }

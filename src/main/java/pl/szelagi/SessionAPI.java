@@ -13,43 +13,39 @@ import pl.szelagi.world.SessionWorldManager;
 import java.io.File;
 
 public final class SessionAPI extends JavaPlugin {
-    private static SessionAPI instance;
-    public static SessionAPI getInstance() {
-        return instance;
-    }
-    public static final File SESSION_API_DIRECTORY = new File(
-            Bukkit.getServer().getPluginsFolder().getPath() + "/SessionAPI"
-    );
-    public static final File RECOVERY_DIRECTORY = new File(
-            SESSION_API_DIRECTORY.getPath() + "/recovery"
-    );
-    public static final File BOARD_DIRECTORY = new File(
-            SESSION_API_DIRECTORY.getPath() + "/board"
-    );
-    @Override
-    public void onEnable() {
-        instance = this;
-        // Plugin startup logic
-        if(!SESSION_API_DIRECTORY.exists()) SESSION_API_DIRECTORY.mkdir();
-        if (!RECOVERY_DIRECTORY.exists()) RECOVERY_DIRECTORY.mkdir();
-        if (!BOARD_DIRECTORY.exists()) BOARD_DIRECTORY.mkdir();
+	public static final File SESSION_API_DIRECTORY = new File(Bukkit.getServer().getPluginsFolder().getPath() + "/SessionAPI");
+	public static final File RECOVERY_DIRECTORY = new File(SESSION_API_DIRECTORY.getPath() + "/recovery");
+	public static final File BOARD_DIRECTORY = new File(SESSION_API_DIRECTORY.getPath() + "/board");
+	private static SessionAPI instance;
 
-        SessionManager.initialize(this);
-        BoardManager.initialize(this);
-        ControllerManager.initialize(this);
+	public static SessionAPI getInstance() {
+		return instance;
+	}
 
-        Recovery.initialize(this);
+	@Override
+	public void onEnable() {
+		instance = this;
+		// Plugin startup logic
+		if (!SESSION_API_DIRECTORY.exists())
+			SESSION_API_DIRECTORY.mkdir();
+		if (!RECOVERY_DIRECTORY.exists())
+			RECOVERY_DIRECTORY.mkdir();
+		if (!BOARD_DIRECTORY.exists())
+			BOARD_DIRECTORY.mkdir();
 
-        SessionWorldManager.initialize(this);
-        CommandExecutor.initialize(this);
-        ConstructTabCompleter.initialize(this);
+		SessionManager.initialize(this);
+		BoardManager.initialize(this);
+		ControllerManager.initialize(this);
 
+		Recovery.initialize(this);
 
+		SessionWorldManager.initialize(this);
+		CommandExecutor.initialize(this);
+		ConstructTabCompleter.initialize(this);
+	}
 
-    }
-
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-    }
+	@Override
+	public void onDisable() {
+		// Plugin shutdown logic
+	}
 }

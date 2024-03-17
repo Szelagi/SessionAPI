@@ -8,21 +8,20 @@ import pl.szelagi.state.PlayerState;
 import java.io.Serializable;
 
 public class SessionSafeControlPlayerState extends PlayerState implements Serializable {
-    private GameMode gameMode;
-    private LocationAdapted locationAdapted;
+	private GameMode gameMode;
+	private LocationAdapted locationAdapted;
 
-    public SessionSafeControlPlayerState(Player player) {
-        super(player);
-    }
+	public SessionSafeControlPlayerState(Player player) {
+		super(player);
+	}
 
-    public void save() {
-        this.gameMode = getPlayer().getGameMode();
-        this.locationAdapted = new LocationAdapted(getPlayer().getLocation());
-    }
+	public void save() {
+		this.gameMode = getPlayer().getGameMode();
+		this.locationAdapted = new LocationAdapted(getPlayer().getLocation());
+	}
 
-    public void load(Player player) {
-        player.setGameMode(gameMode);
-        player.teleport(locationAdapted.getLocation());
-    }
-
+	public void load(Player player) {
+		player.setGameMode(gameMode);
+		player.teleport(locationAdapted.getLocation());
+	}
 }

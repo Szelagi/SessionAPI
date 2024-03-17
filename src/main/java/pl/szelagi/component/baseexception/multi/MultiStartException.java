@@ -5,7 +5,7 @@ import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.baseexception.StartException;
 
 public class MultiStartException extends StartException {
-    public MultiStartException(ISessionComponent component) {
-        super(component.getName() + ", " + BaseComponent.toType(component).name());
-    }
+	public MultiStartException(ISessionComponent component) {
+		super(component.getName() + ", " + BaseComponent.toType(component).name());
+	}
 }

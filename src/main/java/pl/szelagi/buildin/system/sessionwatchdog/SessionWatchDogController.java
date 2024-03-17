@@ -7,19 +7,18 @@ import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
 
 public class SessionWatchDogController extends Controller {
-    public SessionWatchDogController(ISessionComponent sessionComponent) {
-        super(sessionComponent);
-    }
+	public SessionWatchDogController(ISessionComponent sessionComponent) {
+		super(sessionComponent);
+	}
 
-    @Nullable
-    @Override
-    public Listener getListener() {
-        return new SessionWatchDogListener();
-    }
+	@Nullable
+	@Override
+	public Listener getListener() {
+		return new SessionWatchDogListener();
+	}
 
-    @Override
-    public @NotNull String getName() {
-        return "SystemSessionWatchDogController";
-    }
-
+	@Override
+	public @NotNull String getName() {
+		return "SystemSessionWatchDogController";
+	}
 }

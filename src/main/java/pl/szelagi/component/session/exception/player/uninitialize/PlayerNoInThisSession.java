@@ -4,12 +4,12 @@ import org.bukkit.entity.Player;
 import pl.szelagi.component.ISessionComponent;
 
 public class PlayerNoInThisSession extends PlayerUninitializeException {
-    public PlayerNoInThisSession(String name) {
-        super(name);
-    }
+	public PlayerNoInThisSession(String name) {
+		super(name);
+	}
 
-    public static void check(ISessionComponent component, Player player) throws PlayerNoInThisSession {
-        if (!component.getSession().getPlayers().contains(player)) throw new PlayerNoInThisSession("");
-
-    }
+	public static void check(ISessionComponent component, Player player) throws PlayerNoInThisSession {
+		if (!component.getSession().getPlayers().contains(player))
+			throw new PlayerNoInThisSession("");
+	}
 }

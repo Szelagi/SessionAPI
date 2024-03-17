@@ -4,11 +4,12 @@ import org.bukkit.entity.Player;
 import pl.szelagi.manager.SessionManager;
 
 public class PlayerInSessionException extends PlayerInitializeException {
-    public PlayerInSessionException() {
-        super("player in dungeon");
-    }
+	public PlayerInSessionException() {
+		super("player in dungeon");
+	}
 
-    public static void check(Player p) throws PlayerInSessionException {
-        if (SessionManager.getSession(p) != null) throw new PlayerInSessionException();
-    }
+	public static void check(Player p) throws PlayerInSessionException {
+		if (SessionManager.getSession(p) != null)
+			throw new PlayerInSessionException();
+	}
 }

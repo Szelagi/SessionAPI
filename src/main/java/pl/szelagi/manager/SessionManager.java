@@ -16,52 +16,58 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SessionManager {
-    private static final HashMap<Player, Session> PLAYER_SESSION_HASH_MAP = new HashMap<>();
-    public static final ArrayList<Session> SESSIONS = new ArrayList<>();
-    public static void addRelation(Player p, Session d) {
-        PLAYER_SESSION_HASH_MAP.put(p, d);
-    }
-    public static void removeRelation(Player p) {
-        PLAYER_SESSION_HASH_MAP.remove(p);
-    }
-    public static boolean isDuringDungeon(Player p) {
-        return PLAYER_SESSION_HASH_MAP.containsKey(p);
-    }
-    @Nullable
-    public static Session getSession(Player p) {
-        return PLAYER_SESSION_HASH_MAP.get(p);
-    }
-    @Nullable
-    public static Session getSession(Player p, CompareSession c) {
-        var res = PLAYER_SESSION_HASH_MAP.get(p);
-        if (res == null) return null;
-        if (!c.compare(res)) return null;
-        return res;
-    }
+	public static final ArrayList<Session> SESSIONS = new ArrayList<>();
+	private static final HashMap<Player, Session> PLAYER_SESSION_HASH_MAP = new HashMap<>();
 
-    @Nullable
-    public static Session getSession(Player p, Class<?> classType) {
-        return getSession(p, classType::isInstance);
-    }
+	public static void addRelation(Player p, Session d) {
+		PLAYER_SESSION_HASH_MAP.put(p, d);
+	}
 
-    @NotNull
-    public static List<Session> getSessions() {
-        return SESSIONS;
-    }
+	public static void removeRelation(Player p) {
+		PLAYER_SESSION_HASH_MAP.remove(p);
+	}
 
-    public static void initialize(JavaPlugin p) {
-        class ManagerListener implements Listener {
-            @EventHandler(ignoreCancelled = true)
-            public void onSessionStartEvent(SessionStartEvent event) {
-                SESSIONS.add(event.getSession());
-            }
+	public static boolean isDuringDungeon(Player p) {
+		return PLAYER_SESSION_HASH_MAP.containsKey(p);
+	}
 
-            @EventHandler(ignoreCancelled = true)
-            public void onSessionStopEvent(SessionStopEvent event) {
-                SESSIONS.remove(event.getSession());
-            }
+	@Nullable
+	public static Session getSession(Player p) {
+		return PLAYER_SESSION_HASH_MAP.get(p);
+	}
 
-        }
-        p.getServer().getPluginManager().registerEvents(new ManagerListener(), p);
-    }
+	@Nullable
+	public static Session getSession(Player p, CompareSession c) {
+		var res = PLAYER_SESSION_HASH_MAP.get(p);
+		if (res == null)
+			return null;
+		if (!c.compare(res))
+			return null;
+		return res;
+	}
+
+	@Nullable
+	public static Session getSession(Player p, Class<?> classType) {
+		return getSession(p, classType::isInstance);
+	}
+
+	@NotNull
+	public static List<Session> getSessions() {
+		return SESSIONS;
+	}
+
+	public static void initialize(JavaPlugin p) {
+		class ManagerListener implements Listener {
+			@EventHandler(ignoreCancelled = true)
+			public void onSessionStartEvent(SessionStartEvent event) {
+				SESSIONS.add(event.getSession());
+			}
+
+			@EventHandler(ignoreCancelled = true)
+			public void onSessionStopEvent(SessionStopEvent event) {
+				SESSIONS.remove(event.getSession());
+			}
+		}
+		p.getServer().getPluginManager().registerEvents(new ManagerListener(), p);
+	}
 }

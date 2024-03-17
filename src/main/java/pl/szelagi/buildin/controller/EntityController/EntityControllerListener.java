@@ -14,66 +14,63 @@ import pl.szelagi.manager.ControllerManager;
 import java.util.ArrayList;
 
 class EntityControllerListener implements Listener {
-    private final JavaPlugin plugin;
-    public EntityControllerListener(JavaPlugin plugin) {
-        this.plugin = plugin;
-    }
-    private void callEntityDeathEvent(EntityController controller, EntityDeathEvent event) {
-        controller.getEntityDeathEvent().call(c -> c.run(controller, event));
-    }
+	private final JavaPlugin plugin;
 
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        event.getPlayer().sendMessage("BR");
-    }
+	public EntityControllerListener(JavaPlugin plugin) {
+		this.plugin = plugin;
+	}
 
-    private void check(EntityDeathEvent event) {
-        LivingEntity entity = event.getEntity();
-        var dungeon = BoardManager.getSession(entity);
-        if (dungeon == null) return;
-        ArrayList<EntityController> controllers = ControllerManager
-                .getControllers(dungeon, EntityController.class);
-        for (var controller : controllers) {
-            var storedEntity = controller.getEntities().stream()
-                    .filter(e -> e.equals(entity))
-                    .findFirst()
-                    .orElse(null);
-            if (storedEntity == null) continue;
-            controller.removeEntity(entity);
-            callEntityDeathEvent(controller, event);
-        }
-    }
-    @EventHandler(ignoreCancelled = true)
-    public void onEntityDeath(EntityDeathEvent event) {
-        check(event);
-    }
+	private void callEntityDeathEvent(EntityController controller, EntityDeathEvent event) {
+		controller.getEntityDeathEvent().call(c -> c.run(controller, event));
+	}
 
+	@EventHandler
+	public void onBlockBreak(BlockBreakEvent event) {
+		event.getPlayer().sendMessage("BR");
+	}
 
-    private boolean checkEntityDamageByEntity(Entity entity, EntityDamageByEntityEvent event, ControlledEntity type) {
-        boolean isCall = false;
-        var dungeon = BoardManager.getSession(entity.getLocation());
-        if (dungeon == null) return false;
-        ArrayList<EntityController> controllers = ControllerManager
-                .getControllers(dungeon, EntityController.class);
-        for (var controller : controllers) {
-            var storedEntity = controller.getEntities().stream()
-                    .filter(e -> e.equals(entity))
-                    .findFirst()
-                    .orElse(null);
-            if (storedEntity == null) continue;
-            controller.getEntityDamageByEntityEvent()
-                    .call(entityDamageByEntityEvent -> entityDamageByEntityEvent.run(controller, event, type));
-            isCall = true;
-        }
-        return isCall;
-    }
+	private void check(EntityDeathEvent event) {
+		LivingEntity entity = event.getEntity();
+		var dungeon = BoardManager.getSession(entity);
+		if (dungeon == null)
+			return;
+		ArrayList<EntityController> controllers = ControllerManager.getControllers(dungeon, EntityController.class);
+		for (var controller : controllers) {
+			var storedEntity = controller.getEntities().stream().filter(e -> e.equals(entity)).findFirst().orElse(null);
+			if (storedEntity == null)
+				continue;
+			controller.removeEntity(entity);
+			callEntityDeathEvent(controller, event);
+		}
+	}
 
+	@EventHandler(ignoreCancelled = true)
+	public void onEntityDeath(EntityDeathEvent event) {
+		check(event);
+	}
 
-    @EventHandler(ignoreCancelled = true)
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        // as attacker
-        if (checkEntityDamageByEntity(event.getDamager(), event, ControlledEntity.ATTACKER)) return;
-        // as victim
-        checkEntityDamageByEntity(event.getEntity(), event, ControlledEntity.VICTIM);
-    }
+	private boolean checkEntityDamageByEntity(Entity entity, EntityDamageByEntityEvent event, ControlledEntity type) {
+		boolean isCall = false;
+		var dungeon = BoardManager.getSession(entity.getLocation());
+		if (dungeon == null)
+			return false;
+		ArrayList<EntityController> controllers = ControllerManager.getControllers(dungeon, EntityController.class);
+		for (var controller : controllers) {
+			var storedEntity = controller.getEntities().stream().filter(e -> e.equals(entity)).findFirst().orElse(null);
+			if (storedEntity == null)
+				continue;
+			controller.getEntityDamageByEntityEvent().call(entityDamageByEntityEvent -> entityDamageByEntityEvent.run(controller, event, type));
+			isCall = true;
+		}
+		return isCall;
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+		// as attacker
+		if (checkEntityDamageByEntity(event.getDamager(), event, ControlledEntity.ATTACKER))
+			return;
+		// as victim
+		checkEntityDamageByEntity(event.getEntity(), event, ControlledEntity.VICTIM);
+	}
 }

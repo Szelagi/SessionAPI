@@ -34,207 +34,214 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class Board extends BaseComponent {
-    public final static String SCHEMATIC_CONSTRUCTOR_NAME = "constructor";
-    public final static String SCHEMATIC_DESTRUCTOR_NAME = "destructor";
-    public final static String SIGN_TAG_DATA_NAME = "signtagdata";
-    private final Session session;
+	public final static String SCHEMATIC_CONSTRUCTOR_NAME = "constructor";
+	public final static String SCHEMATIC_DESTRUCTOR_NAME = "destructor";
+	public final static String SIGN_TAG_DATA_NAME = "signtagdata";
+	private final Session session;
+	private final RemoteProcess remoteProcess;
+	private boolean isUsed;
+	private Space space;
+	private BoardFileManager boardFileManager;
+	private SignTagData signTagData;
 
-    @Override
-    public @NotNull Session getSession() {
-        return session;
-    }
+	// todo onFinal(end)
+	public Board(Session session) {
+		this.session = session;
+		this.isUsed = false;
+		remoteProcess = new RemoteProcess(session.getMainProcess());
+	}
 
-    private boolean isUsed;
-    private Space space;
-    private final RemoteProcess remoteProcess;
-    private BoardFileManager boardFileManager;
-    private SignTagData signTagData;
+	@Override
+	public @NotNull Session getSession() {
+		return session;
+	}
 
-    // todo onFinal(end)
-    public Board(Session session) {
-        this.session = session;
-        this.isUsed = false;
-        remoteProcess = new RemoteProcess(session.getMainProcess());
-    }
+	public SignTagData getSignTagData() {
+		return signTagData;
+	}
 
-    public SignTagData getSignTagData() {
-        return signTagData;
-    }
+	public @NotNull IControlProcess getProcess() {
+		return remoteProcess;
+	}
 
-    public @NotNull IControlProcess getProcess() {
-        return remoteProcess;
-    }
+	public @NotNull JavaPlugin getPlugin() {
+		return getSession().getPlugin();
+	}
 
-    public @NotNull JavaPlugin getPlugin() {
-        return getSession().getPlugin();
-    }
-    public @NotNull BoardFileManager getSchematicStorage() {
-        return boardFileManager;
-    }
+	public @NotNull BoardFileManager getSchematicStorage() {
+		return boardFileManager;
+	}
 
-    // Start and stop
+	// Start and stop
 
-    @MustBeInvokedByOverriders
-    public void start() throws StartException {
-        if (isEnable()) throw new MultiStartException(this);
-        if (isUsed) throw new StartException("board start used");
-        setEnable(true);
-        isUsed = true;
+	@MustBeInvokedByOverriders
+	public void start() throws StartException {
+		if (isEnable())
+			throw new MultiStartException(this);
+		if (isUsed)
+			throw new StartException("board start used");
+		setEnable(true);
+		isUsed = true;
 
-        // start exception
+		// start exception
 
-        Debug.send(this, "start");
+		Debug.send(this, "start");
 
+		space = SpaceAllocator.allocate(SessionWorldManager.getSessionWorld());
+		this.boardFileManager = new BoardFileManager(getName(), getSpace());
 
-        space = SpaceAllocator.allocate(SessionWorldManager.getSessionWorld());
-        this.boardFileManager = new BoardFileManager(getName(), getSpace());
+		if (boardFileManager.existsSignTagData(SIGN_TAG_DATA_NAME)) {
+			this.signTagData = boardFileManager.loadSignTagData(SIGN_TAG_DATA_NAME);
+		} else {
+			this.signTagData = new SignTagData();
+		}
 
-        if (boardFileManager.existsSignTagData(SIGN_TAG_DATA_NAME)) {
-            this.signTagData = boardFileManager.loadSignTagData(SIGN_TAG_DATA_NAME);
-        } else {
-            this.signTagData = new SignTagData();
-        }
+		// initialize players
+		Debug.send(this, "constructor");
+		constructor();
+		for (var p : getSession().getPlayers())
+			systemPlayerConstructor(p, InitializeType.COMPONENT_CONSTRUCTOR);
 
-        // initialize players
-        Debug.send(this, "constructor");
-        constructor();
-        for (var p : getSession().getPlayers()) systemPlayerConstructor(p, InitializeType.COMPONENT_CONSTRUCTOR);
+		Debug.send(this, "generate");
+		generate();
 
-        Debug.send(this, "generate");
-        generate();
+		// BoardStartEvent
+		var event = new BoardStartEvent(this);
+		Bukkit.getPluginManager().callEvent(event);
 
+		new BoardWatchDogController(this).start();
+		new NoNaturalSpawnController(this).start();
+	}
 
-        // BoardStartEvent
-        var event = new BoardStartEvent(this);
-        Bukkit.getPluginManager().callEvent(event);
+	@MustBeInvokedByOverriders
+	public void stop() throws StopException {
+		if (!isEnable())
+			throw new MultiStopException(this);
+		setEnable(false);
 
-        new BoardWatchDogController(this).start();
-        new NoNaturalSpawnController(this).start();
-    }
+		Debug.send(this, "stop");
 
-    @MustBeInvokedByOverriders
-    public void stop() throws StopException {
-        if (!isEnable()) throw new MultiStopException(this);
-        setEnable(false);
+		remoteProcess.destroy();
 
+		// initialize players
+		for (var p : getSession().getPlayers())
+			systemPlayerDestructor(p, UninitializedType.COMPONENT_DESTRUCTOR);
+		Debug.send(this, "destructor");
+		destructor();
 
-        Debug.send(this, "stop");
+		// degenerate
+		Debug.send(this, "degenerate");
+		degenerate();
 
+		// deallocate space
+		SpaceAllocator.deallocate(space);
 
-        remoteProcess.destroy();
+		// BoardStopEvent
+		var event = new BoardStopEvent(this);
+		Bukkit.getPluginManager().callEvent(event);
+	}
 
+	// Protected
+	protected Location getBase() {
+		return getSpace().getCenter();
+	}
 
-        // initialize players
-        for (var p : getSession().getPlayers()) systemPlayerDestructor(p, UninitializedType.COMPONENT_DESTRUCTOR);
-        Debug.send(this, "destructor");
-        destructor();
+	public Space getSpace() {
+		return space;
+	}
 
-        // degenerate
-        Debug.send(this, "degenerate");
-        degenerate();
+	// Abstract
+	protected void generate() {
+		getSpace().getCenter().getBlock().setType(Material.BEDROCK);
+		if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
+			boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
+		}
+		if (signTagData != null) {
+			for (var l : signTagData.toLocations())
+				l.getBlock().setType(Material.AIR);
+		}
 
-        // deallocate space
-        SpaceAllocator.deallocate(space);
+		// error
+		//            var spatial = schematicStorage.loadSpatial(SCHEMATIC_CONSTRUCTOR_NAME);
+		//            for (var p : Bukkit.getServer().getOnlinePlayers()) p.sendMessage(spatial.getCenter().toString());
+		//            for (var p : Bukkit.getServer().getOnlinePlayers()) p.sendMessage(getSpace().getCenter().toString());
+		//            processedData = PreProcessor.process(spatial);
+		//            signTagData = SignTagAnalyzer.process(getSpace());
+		//
+		//        } else {
+		//            signTagData = SignTagAnalyzer.process(getSpace());
 
-        // BoardStopEvent
-        var event = new BoardStopEvent(this);
-        Bukkit.getPluginManager().callEvent(event);
-    }
-    // Protected
-    protected Location getBase() {
-        return getSpace().getCenter();
-    }
-    public Space getSpace() {
-        return space;
-    }
-    // Abstract
-    protected void generate() {
-        getSpace().getCenter().getBlock().setType(Material.BEDROCK);
-        if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
-            boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
-        }
-        if (signTagData != null) {
-            for (var l : signTagData.toLocations()) l.getBlock().setType(Material.AIR);
-        }
+	}
 
-            // error
-//            var spatial = schematicStorage.loadSpatial(SCHEMATIC_CONSTRUCTOR_NAME);
-//            for (var p : Bukkit.getServer().getOnlinePlayers()) p.sendMessage(spatial.getCenter().toString());
-//            for (var p : Bukkit.getServer().getOnlinePlayers()) p.sendMessage(getSpace().getCenter().toString());
-//            processedData = PreProcessor.process(spatial);
-//            signTagData = SignTagAnalyzer.process(getSpace());
-//
-//        } else {
-//            signTagData = SignTagAnalyzer.process(getSpace());
+	protected void degenerate() {
+		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME))
+			boardFileManager.loadSchematic(SCHEMATIC_DESTRUCTOR_NAME);
+		for (var entity : getSpace().getEntitiesIn())
+			entity.remove();
+	}
 
-    };
-    protected void degenerate() {
-        if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME))
-            boardFileManager.loadSchematic(SCHEMATIC_DESTRUCTOR_NAME);
-        for (var entity : getSpace().getEntitiesIn()) entity.remove();
+	protected int getDefaultTime() {
+		return 0;
+	}
 
-    }
-    protected int getDefaultTime() {
-        return 0;
-    }
-    @Nullable
-    public Listener getListener() {
-        return null;
-    }
-    @Nonnull
-    protected WeatherType getDefaultWeather() {
-        return WeatherType.CLEAR;
-    }
+	@Nullable
+	public Listener getListener() {
+		return null;
+	}
 
-    protected Location getStartSpawnLocation() {
-        return getSpace().getAbove(getSpace().getCenter());
-    }
-    // Public methods
-    public boolean isUsed() {
-        return isUsed;
-    }
-    // Private methods
+	@Nonnull
+	protected WeatherType getDefaultWeather() {
+		return WeatherType.CLEAR;
+	}
 
+	protected Location getStartSpawnLocation() {
+		return getSpace().getAbove(getSpace().getCenter());
+	}
 
-    @MustBeInvokedByOverriders
-    private void systemPlayerConstructor(Player player, InitializeType type) {
-        Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
-        playerConstructor(player, type);
-        // recursive for player add
-        if (type == InitializeType.PLAYER_ADD) {
-            // controllers in
-            for (var controller : getProcess().getControllers()) {
-                reflectionSystemPlayerConstructor(controller, player, type);
-            }
-        }
-    }
+	// Public methods
+	public boolean isUsed() {
+		return isUsed;
+	}
+	// Private methods
 
-    @MustBeInvokedByOverriders
-    private void systemPlayerDestructor(Player player, UninitializedType type) {
-        // recursive for player remove
-        if (type == UninitializedType.PLAYER_REMOVE) {
-            // controllers in
-            for (var controller : getProcess().getControllers()) {
-                reflectionSystemPlayerDestructor(controller, player, type);
-            }
-        }
-        Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
-        playerDestructor(player, type);
-    }
+	@MustBeInvokedByOverriders
+	private void systemPlayerConstructor(Player player, InitializeType type) {
+		Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
+		playerConstructor(player, type);
+		// recursive for player add
+		if (type == InitializeType.PLAYER_ADD) {
+			// controllers in
+			for (var controller : getProcess().getControllers()) {
+				reflectionSystemPlayerConstructor(controller, player, type);
+			}
+		}
+	}
 
-    @Override
-    public void playerConstructor(Player player, InitializeType type) {
-        super.playerConstructor(player, type);
-        player.teleport(getStartSpawnLocation());
-        player.setPlayerTime(getDefaultTime(), false);
-        player.setPlayerWeather(getDefaultWeather());
-    }
+	@MustBeInvokedByOverriders
+	private void systemPlayerDestructor(Player player, UninitializedType type) {
+		// recursive for player remove
+		if (type == UninitializedType.PLAYER_REMOVE) {
+			// controllers in
+			for (var controller : getProcess().getControllers()) {
+				reflectionSystemPlayerDestructor(controller, player, type);
+			}
+		}
+		Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
+		playerDestructor(player, type);
+	}
 
-    @Override
-    public void playerDestructor(Player player, UninitializedType type) {
-        super.playerDestructor(player, type);
-        player.resetPlayerWeather();
-        player.resetPlayerTime();
-    }
+	@Override
+	public void playerConstructor(Player player, InitializeType type) {
+		super.playerConstructor(player, type);
+		player.teleport(getStartSpawnLocation());
+		player.setPlayerTime(getDefaultTime(), false);
+		player.setPlayerWeather(getDefaultWeather());
+	}
 
+	@Override
+	public void playerDestructor(Player player, UninitializedType type) {
+		super.playerDestructor(player, type);
+		player.resetPlayerWeather();
+		player.resetPlayerTime();
+	}
 }

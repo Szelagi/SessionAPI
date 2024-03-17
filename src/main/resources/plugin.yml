@@ -3,9 +3,9 @@ description: "SessionAPI Plugin"
 version: '${project.version}'
 main: pl.szelagi.SessionAPI
 api-version: '1.20'
-authors: [Szelagi]
+authors: [ Szelagi ]
 commands:
-#   Board editor
+  #   Board editor
   board-save:
     description: "editor board save"
   board-edit:
@@ -14,7 +14,7 @@ commands:
     description: "exit board editor"
   board-list:
     description: "list of board saves"
-#   Session manage
+  #   Session manage
   session-exit:
     description: "force session exit"
   session-add-player:
