@@ -8,6 +8,7 @@ import pl.szelagi.component.constructor.PlayerDestructorLambdas;
 import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.session.Session;
+import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.util.IncrementalGenerator;
 import pl.szelagi.util.PluginRegistry;
 import pl.szelagi.util.ReflectionRecursive;
@@ -45,16 +46,6 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
 		} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
 			throw new RuntimeException(exception);
 		}
-	}
-
-	public static ComponentType toType(ISessionComponent component) {
-		if (component instanceof Controller)
-			return ComponentType.CONTROLLER;
-		if (component instanceof Board)
-			return ComponentType.BOARD;
-		if (component instanceof Session)
-			return ComponentType.SESSION;
-		return ComponentType.OTHER;
 	}
 
 	public boolean isEnable() {
@@ -118,4 +109,6 @@ public abstract class BaseComponent implements ISessionComponent, IComponentCons
 		var pluginName = plugin != null ? plugin.getName() : currentJarFile.getName();
 		return this.getClass().getSimpleName() + getComponentTypeChar() + '#' + pluginName;
 	}
+
+	public abstract RemoteProcess getParentProcess();
 }
