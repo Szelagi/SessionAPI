@@ -39,31 +39,12 @@ public abstract class Session extends BaseComponent {
 	private final MainProcess mainProcess;
 	private final RemoteProcess remoteProcess;
 	private final JavaPlugin plugin;
-	private final ArrayList<Player> initialPlayers;
 	private Board currentBoard;
 	private RecoveryPlayerController recoveryPlayerController;
-
-	public Session(JavaPlugin plugin, ArrayList<Player> players) {
-		this.plugin = plugin;
-		this.initialPlayers = players;
-		this.mainProcess = new MainProcess(this);
-		this.remoteProcess = new RemoteProcess(mainProcess);
-	}
-
-	public Session(JavaPlugin plugin, Player player) {
-		this.plugin = plugin;
-
-		this.initialPlayers = new ArrayList<>();
-		initialPlayers.add(player);
-
-		this.mainProcess = new MainProcess(this);
-		this.remoteProcess = new RemoteProcess(mainProcess);
-	}
 
 	public Session(JavaPlugin plugin) {
 		this.plugin = plugin;
 
-		this.initialPlayers = new ArrayList<>();
 		this.mainProcess = new MainProcess(this);
 		this.remoteProcess = new RemoteProcess(mainProcess);
 	}
@@ -77,11 +58,7 @@ public abstract class Session extends BaseComponent {
 	public void start() throws SessionStartException, PlayerInitializeException {
 		if (isEnable())
 			throw new MultiStartException(this);
-		// exceptions system
-		for (var player : initialPlayers) {
-			PlayerInSessionException.check(player);
-			PlayerIsNotAliveException.check(player);
-		}
+
 		setEnable(true);
 		Debug.send(this, "start");
 		currentBoard = getDefaultStartBoard();
@@ -89,10 +66,6 @@ public abstract class Session extends BaseComponent {
 		// initialize consturcot
 		Debug.send(this, "constructor");
 		constructor();
-		// initialize players
-		for (var player : initialPlayers) {
-			systemPlayerConstructor(player, InitializeType.COMPONENT_CONSTRUCTOR, true, false);
-		}
 
 		// run system tasks
 		getProcess().runControlledTaskTimer(mainProcess::optimiseTasks, Time.Seconds(60), Time.Seconds((60)));
@@ -253,9 +226,5 @@ public abstract class Session extends BaseComponent {
 		//        new LifeController(this, 5, Time.Seconds(10)).start();
 		//        new StopQuitController(this).start();
 		//        new NoPlaceAndBreakController(this).start();
-	}
-
-	public ArrayList<Player> getInitialPlayers() {
-		return initialPlayers;
 	}
 }
