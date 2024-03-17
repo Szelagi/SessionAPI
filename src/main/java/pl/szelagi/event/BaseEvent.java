@@ -2,19 +2,24 @@ package pl.szelagi.event;
 
 import java.util.UUID;
 
-public abstract class BaseEvent<T extends EventListener> {
-	private final Class<T> listenerClass;
+public abstract class BaseEvent {
 	private final UUID uuid = UUID.randomUUID();
-
-	public BaseEvent(Class<T> listenerClass) {
-		this.listenerClass = listenerClass;
-	}
 
 	public UUID getUuid() {
 		return uuid;
 	}
 
+	public abstract Class<? extends EventListener> getListenerClazz();
+
 	public boolean isListenerInstance(EventListener listener) {
-		return listenerClass.isInstance(listener);
+		return getListenerClazz().isInstance(listener);
+	}
+
+	public boolean call(EventListener listener) {
+		if (isListenerInstance(listener)) {
+			getListenerClazz().cast(listener).run(this);
+			return true;
+		}
+		return false;
 	}
 }

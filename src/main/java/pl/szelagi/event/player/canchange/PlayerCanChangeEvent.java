@@ -7,19 +7,17 @@ import pl.szelagi.cancelable.CancelCause;
 import pl.szelagi.cancelable.CancelNotCancelableException;
 import pl.szelagi.cancelable.Cancelable;
 import pl.szelagi.event.BaseEvent;
-import pl.szelagi.event.EventListener;
 
 import java.util.Collection;
 
-public abstract class PlayerCanChangeEvent<T extends EventListener> extends BaseEvent<T> implements Cancelable {
+public abstract class PlayerCanChangeEvent extends BaseEvent implements Cancelable {
 	private final @NotNull Player player;
 	private final @NotNull Collection<Player> currentPlayers;
 	private final @NotNull Cancelable cancelable;
 	private @Nullable CancelCause cancelCause;
 	private boolean isCanceled;
 
-	public PlayerCanChangeEvent(@NotNull Class<T> listenerClass, @NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull Cancelable cancelable, @Nullable CancelCause cancelCause, boolean isCanceled) {
-		super(listenerClass);
+	public PlayerCanChangeEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull Cancelable cancelable, @Nullable CancelCause cancelCause, boolean isCanceled) {
 		this.player = player;
 		this.currentPlayers = currentPlayers;
 		this.cancelable = cancelable;

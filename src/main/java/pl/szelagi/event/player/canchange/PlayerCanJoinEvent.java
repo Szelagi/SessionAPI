@@ -5,20 +5,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pl.szelagi.cancelable.CancelCause;
 import pl.szelagi.cancelable.Cancelable;
+import pl.szelagi.event.EventListener;
 import pl.szelagi.event.player.canchange.listener.PlayerCanJoinListener;
 import pl.szelagi.event.player.canchange.type.JoinType;
 
 import java.util.Collection;
 
-public class PlayerCanJoinEvent extends PlayerCanChangeEvent<PlayerCanJoinListener> {
+public class PlayerCanJoinEvent extends PlayerCanChangeEvent {
 	private final JoinType type;
 
 	public PlayerCanJoinEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull Cancelable cancelable, @Nullable CancelCause cancelCause, boolean isCanceled, JoinType type) {
-		super(PlayerCanJoinListener.class, player, currentPlayers, cancelable, cancelCause, isCanceled);
+		super(player, currentPlayers, cancelable, cancelCause, isCanceled);
 		this.type = type;
 	}
 
 	public JoinType getType() {
 		return type;
+	}
+
+	@Override
+	public Class<? extends EventListener> getListenerClazz() {
+		return PlayerCanJoinListener.class;
 	}
 }
