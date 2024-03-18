@@ -1,5 +1,8 @@
 package pl.szelagi.event;
 
+import pl.szelagi.util.ReflectionRecursive;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
 public abstract class BaseEvent {
@@ -9,17 +12,17 @@ public abstract class BaseEvent {
 		return uuid;
 	}
 
-	public abstract Class<? extends EventListener> getListenerClazz();
-
-	public boolean isListenerInstance(EventListener listener) {
-		return getListenerClazz().isInstance(listener);
-	}
-
 	public boolean call(EventListener listener) {
-		if (isListenerInstance(listener)) {
-			getListenerClazz().cast(listener).run(this);
+		try {
+			var methods = ReflectionRecursive.getEventMethods(listener.getClass(), this.getClass());
+			if (methods.isEmpty())
+				return false;
+			for (var method : methods)
+				method.invoke(listener, this);
 			return true;
+		} catch (IllegalAccessException |
+		         InvocationTargetException e) {
+			throw new RuntimeException(e);
 		}
-		return false;
 	}
 }
