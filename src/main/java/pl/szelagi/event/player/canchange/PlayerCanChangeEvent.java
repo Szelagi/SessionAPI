@@ -3,6 +3,7 @@ package pl.szelagi.event.player.canchange;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pl.szelagi.cancelable.CanCancelable;
 import pl.szelagi.cancelable.CancelCause;
 import pl.szelagi.cancelable.CancelNotCancelableException;
 import pl.szelagi.cancelable.Cancelable;
@@ -13,16 +14,16 @@ import java.util.Collection;
 public abstract class PlayerCanChangeEvent extends BaseEvent implements Cancelable {
 	private final @NotNull Player player;
 	private final @NotNull Collection<Player> currentPlayers;
-	private final @NotNull Cancelable cancelable;
+	private final @NotNull CanCancelable cancelable;
 	private @Nullable CancelCause cancelCause;
 	private boolean isCanceled;
 
-	public PlayerCanChangeEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull Cancelable cancelable, @Nullable CancelCause cancelCause, boolean isCanceled) {
+	public PlayerCanChangeEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull CanCancelable cancelable) {
 		this.player = player;
 		this.currentPlayers = currentPlayers;
 		this.cancelable = cancelable;
-		this.cancelCause = cancelCause;
-		this.isCanceled = isCanceled;
+		this.cancelCause = null;
+		this.isCanceled = false;
 	}
 
 	public @NotNull Player getPlayer() {

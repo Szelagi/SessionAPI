@@ -2,11 +2,6 @@ package pl.szelagi.event.player.canchange;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import pl.szelagi.cancelable.CancelCause;
-import pl.szelagi.cancelable.Cancelable;
-import pl.szelagi.event.EventListener;
-import pl.szelagi.event.player.canchange.listener.PlayerCanJoinListener;
 import pl.szelagi.event.player.canchange.type.JoinType;
 
 import java.util.Collection;
@@ -14,17 +9,12 @@ import java.util.Collection;
 public class PlayerCanJoinEvent extends PlayerCanChangeEvent {
 	private final JoinType type;
 
-	public PlayerCanJoinEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull Cancelable cancelable, @Nullable CancelCause cancelCause, boolean isCanceled, JoinType type) {
-		super(player, currentPlayers, cancelable, cancelCause, isCanceled);
+	public PlayerCanJoinEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, JoinType type) {
+		super(player, currentPlayers, type);
 		this.type = type;
 	}
 
 	public JoinType getType() {
 		return type;
-	}
-
-	@Override
-	public Class<? extends EventListener> getListenerClazz() {
-		return PlayerCanJoinListener.class;
 	}
 }
