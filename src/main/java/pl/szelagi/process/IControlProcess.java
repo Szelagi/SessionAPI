@@ -1,16 +1,25 @@
 package pl.szelagi.process;
 
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import pl.szelagi.component.controller.Controller;
+import pl.szelagi.event.BaseEvent;
+import pl.szelagi.event.EventListener;
+import pl.szelagi.process.exception.MultiRegisterException;
+import pl.szelagi.process.exception.NotFoundUnregisterException;
 import pl.szelagi.util.timespigot.Time;
 
 import java.util.ArrayList;
 
 public interface IControlProcess {
-	void registerController(Controller controller);
+	void registerListener(EventListener listener) throws MultiRegisterException;
 
-	void unregisterController(Controller controller);
+	void unregisterListener(EventListener listener) throws NotFoundUnregisterException;
+
+	/**
+	 * invoke listeners only in process
+	 */
+	void invokeSelfListeners(BaseEvent event);
+
+	void invokeAllListeners(BaseEvent event);
 
 	@NotNull ProcessTask runControlledTask(@NotNull Runnable runnable);
 
@@ -24,13 +33,9 @@ public interface IControlProcess {
 
 	@NotNull ProcessTask runControlledTaskTimerAsynchronously(@NotNull Runnable runnable, @NotNull Time laterTime, @NotNull Time repeatTime);
 
-	void stopControlledTask(@NotNull BukkitTask bukkitTask);
+	void stopControlledTask(@NotNull ProcessTask processTask);
 
-	default void stopControlledTask(@NotNull ProcessTask processTask) {
-		processTask.cancel();
-	}
+	ArrayList<ProcessTask> getTasks();
 
-	ArrayList<BukkitTask> getTasks();
-
-	ArrayList<Controller> getControllers();
+	ArrayList<EventListener> getListeners();
 }
