@@ -3,7 +3,7 @@ package pl.szelagi.component.session.exception.player.uninitialize;
 import org.bukkit.entity.Player;
 import pl.szelagi.component.ISessionComponent;
 
-public class PlayerNoInThisSession extends PlayerUninitializeException {
+public class PlayerNoInThisSession extends PlayerQuitException {
 	public PlayerNoInThisSession(String name) {
 		super(name);
 	}

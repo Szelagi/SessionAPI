@@ -2,7 +2,7 @@ package pl.szelagi.component.session.exception.player.initialize;
 
 import org.bukkit.entity.Player;
 
-public class PlayerIsNotAliveException extends PlayerInitializeException {
+public class PlayerIsNotAliveException extends PlayerJoinException {
 	public PlayerIsNotAliveException() {
 		super("player in not alive");
 	}
