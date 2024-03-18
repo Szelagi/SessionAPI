@@ -12,20 +12,25 @@ import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.baseexception.multi.MultiStartException;
 import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.Board;
-import pl.szelagi.component.constructor.InitializeType;
-import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.session.cause.StopCause;
 import pl.szelagi.component.session.event.SessionStartEvent;
 import pl.szelagi.component.session.event.SessionStopEvent;
 import pl.szelagi.component.session.exception.SessionStartException;
 import pl.szelagi.component.session.exception.SessionStopException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerInSessionException;
-import pl.szelagi.component.session.exception.player.initialize.PlayerInitializeException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerIsNotAliveException;
+import pl.szelagi.component.session.exception.player.initialize.PlayerJoinException;
 import pl.szelagi.component.session.exception.player.uninitialize.PlayerNoInThisSession;
-import pl.szelagi.component.session.exception.player.uninitialize.PlayerUninitializeException;
+import pl.szelagi.component.session.exception.player.uninitialize.PlayerQuitException;
+import pl.szelagi.event.component.ComponentConstructorEvent;
+import pl.szelagi.event.player.canchange.PlayerCanJoinEvent;
+import pl.szelagi.event.player.canchange.PlayerCanQuitEvent;
+import pl.szelagi.event.player.canchange.type.JoinType;
+import pl.szelagi.event.player.canchange.type.QuitType;
+import pl.szelagi.event.player.initialize.InvokeType;
+import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
+import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
 import pl.szelagi.manager.SessionManager;
-import pl.szelagi.process.IControlProcess;
 import pl.szelagi.process.MainProcess;
 import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.util.Debug;
@@ -37,16 +42,14 @@ import java.util.ArrayList;
 public abstract class Session extends BaseComponent {
 	protected final ArrayList<Player> players = new ArrayList<>();
 	private final MainProcess mainProcess;
-	private final RemoteProcess remoteProcess;
+	private RemoteProcess remoteProcess;
 	private final JavaPlugin plugin;
 	private Board currentBoard;
 	private RecoveryPlayerController recoveryPlayerController;
 
 	public Session(JavaPlugin plugin) {
 		this.plugin = plugin;
-
 		this.mainProcess = new MainProcess(this);
-		this.remoteProcess = new RemoteProcess(mainProcess);
 	}
 
 	@Override
@@ -55,39 +58,26 @@ public abstract class Session extends BaseComponent {
 	}
 
 	@MustBeInvokedByOverriders
-	public void start() throws SessionStartException, PlayerInitializeException {
+	public void start() throws SessionStartException, PlayerJoinException {
 		if (isEnable())
 			throw new MultiStartException(this);
-
 		setEnable(true);
+		remoteProcess = new RemoteProcess(mainProcess);
+		remoteProcess.registerListener(this);
+
 		Debug.send(this, "start");
 		currentBoard = getDefaultStartBoard();
 
 		// initialize consturcot
 		Debug.send(this, "constructor");
-		constructor();
 
-		// run system tasks
-		getProcess().runControlledTaskTimer(mainProcess::optimiseTasks, Time.Seconds(60), Time.Seconds((60)));
+		invokeSelfComponentConstructor();
+		invokeSelfPlayerConstructors();
 
 		var event = new SessionStartEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
+		callBukkitEvent(event);
 
 		currentBoard.start();
-
-		recoveryPlayerController = new RecoveryPlayerController(this);
-		recoveryPlayerController.start();
-
-		new SessionWatchDogController(this).start();
-		//new LifeController(this, 5, Time.Seconds(5)).start();
-		//new PhysicsController(this).start();
-		//new StopQuitController(this).start();
-	}
-
-	@Override
-	public void constructor() {
-		super.constructor();
-		new SessionSafeControlPlayers(this).start();
 	}
 
 	@MustBeInvokedByOverriders
@@ -98,22 +88,21 @@ public abstract class Session extends BaseComponent {
 		Debug.send(this, "stop");
 
 		//stop and destroy all tasks
+		remoteProcess.destroy();
 		mainProcess.destroy();
-		currentBoard.stop();
 
-		// deinitialize players
 		var playersArrayCopy = new ArrayList<>(players);
-		for (var player : playersArrayCopy) {
-			systemPlayerDestructor(player, UninitializedType.COMPONENT_DESTRUCTOR);
-		}
-		// system destructor
+		playersArrayCopy.forEach(this::removePlayer);
+
 		Debug.send(this, "destructor");
-		destructor(cause);
+		invokeSelfPlayerDestructors();
+		invokeSelfComponentDestructor();
 
 		setEnable(false);
 
 		var event = new SessionStopEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
+		Bukkit.getPluginManager()
+		      .callEvent(event);
 	}
 
 	@MustBeInvokedByOverriders
@@ -124,7 +113,6 @@ public abstract class Session extends BaseComponent {
 		currentBoard.start();
 	}
 
-	// Public
 	public ArrayList<Player> getPlayers() {
 		return players;
 	}
@@ -133,47 +121,10 @@ public abstract class Session extends BaseComponent {
 		return players.size();
 	}
 
-	@MustBeInvokedByOverriders
-	private void systemPlayerConstructor(Player player, InitializeType type, boolean invokeControllers, boolean invokeBoard) {
-		SessionManager.addRelation(player, this.getSession());
-		players.add(player);
-		Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
-		playerConstructor(player, type);
-		// recursive for player add
-		// controllers in
-		if (invokeControllers) {
-			for (var controller : getProcess().getControllers()) {
-				reflectionSystemPlayerConstructor(controller, player, type);
-			}
-		}
-		// board
-		if (invokeBoard) {
-			reflectionSystemPlayerConstructor(getCurrentBoard(), player, type);
-		}
-	}
-
-	@MustBeInvokedByOverriders
-	private void systemPlayerDestructor(Player player, UninitializedType type) {
-		SessionManager.removeRelation(player);
-		players.remove(player);
-		// recursive for player remove
-		if (type == UninitializedType.PLAYER_REMOVE) {
-			// controllers in
-			for (var controller : getProcess().getControllers()) {
-				reflectionSystemPlayerDestructor(controller, player, type);
-			}
-			// board
-			reflectionSystemPlayerDestructor(getCurrentBoard(), player, type);
-		}
-		Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
-		playerDestructor(player, type);
-	}
-
-	// Abstract
 	@Nonnull
 	protected abstract Board getDefaultStartBoard();
 
-	public final @NotNull IControlProcess getProcess() {
+	public final @NotNull RemoteProcess getProcess() {
 		return remoteProcess;
 	}
 
@@ -186,24 +137,53 @@ public abstract class Session extends BaseComponent {
 	}
 
 	@MustBeInvokedByOverriders
-	public void addPlayer(Player player) throws PlayerInitializeException {
+	public void addPlayer(Player player) throws PlayerJoinException {
 		PlayerIsNotAliveException.check(player);
 		PlayerInSessionException.check(player);
-		systemPlayerConstructor(player, InitializeType.PLAYER_ADD, true, true);
+		var canJoinEvent = new PlayerCanJoinEvent(player, getPlayers(), JoinType.PLUGIN);
+		getProcess().invokeAllListeners(canJoinEvent);
+		if (canJoinEvent.isCanceled()) {
+			assert canJoinEvent.getCancelCause() != null;
+			throw new PlayerJoinException(canJoinEvent
+					                              .getCancelCause()
+					                              .message());
+		}
+		var otherPlayers = new ArrayList<>(getPlayers());
+
+		SessionManager.addRelation(player, this.getSession());
+		players.add(player);
+
+		var joinEvent = new PlayerConstructorEvent(player, otherPlayers, getPlayers(), InvokeType.CHANGE);
+		getProcess().invokeAllListeners(joinEvent);
 	}
 
 	@MustBeInvokedByOverriders
-	public void removePlayer(Player player) throws PlayerUninitializeException {
+	public void removePlayer(Player player) throws PlayerQuitException {
 		PlayerNoInThisSession.check(this, player);
-		systemPlayerDestructor(player, UninitializedType.PLAYER_REMOVE);
+		var canPlayerQuit = new PlayerCanQuitEvent(player, getPlayers(), QuitType.PLUGIN_FORCE);
+		getProcess().invokeAllListeners(canPlayerQuit);
+		if (canPlayerQuit.isCanceled()) {
+			assert canPlayerQuit.getCancelCause() != null;
+			throw new PlayerQuitException(canPlayerQuit
+					                              .getCancelCause()
+					                              .message());
+		}
+		var otherPlayers = new ArrayList<>(getPlayers());
+
+		SessionManager.removeRelation(player);
+		players.remove(player);
+
+		var quitEvent = new PlayerDestructorEvent(player, otherPlayers, getPlayers(), InvokeType.CHANGE);
+		getProcess().invokeAllListeners(quitEvent);
 	}
 
-	@Override
-	public final void destructor() {
-		super.destructor();
-	}
-
-	public void destructor(StopCause cause) {
+	public final void systemSessionConstructor(ComponentConstructorEvent event) {
+		new SessionWatchDogController(this).start();
+		new SessionSafeControlPlayers(this).start();
+		recoveryPlayerController = new RecoveryPlayerController(this);
+		recoveryPlayerController.start();
+		// run system tasks
+		getProcess().runControlledTaskTimer(mainProcess::optimiseTasks, Time.Seconds(60), Time.Seconds((60)));
 	}
 
 	public void forceSaveRecovery() {
@@ -216,15 +196,8 @@ public abstract class Session extends BaseComponent {
 		return plugin;
 	}
 
-	/**
-	 * @controllers PhysicsController, LifeController, StopQuitController, NoPlaceAndBreakController
-	 */
 	@Override
-	protected void startBaseControllers() {
-		super.startBaseControllers();
-		//        new PhysicsController(this).start();
-		//        new LifeController(this, 5, Time.Seconds(10)).start();
-		//        new StopQuitController(this).start();
-		//        new NoPlaceAndBreakController(this).start();
+	public RemoteProcess getParentProcess() {
+		return null;
 	}
 }

@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.WeatherType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -19,10 +18,9 @@ import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.event.BoardStartEvent;
 import pl.szelagi.component.board.event.BoardStopEvent;
 import pl.szelagi.component.board.filemanager.BoardFileManager;
-import pl.szelagi.component.constructor.InitializeType;
-import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.session.Session;
-import pl.szelagi.process.IControlProcess;
+import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
+import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
 import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.space.Space;
 import pl.szelagi.space.SpaceAllocator;
@@ -38,17 +36,15 @@ public abstract class Board extends BaseComponent {
 	public final static String SCHEMATIC_DESTRUCTOR_NAME = "destructor";
 	public final static String SIGN_TAG_DATA_NAME = "signtagdata";
 	private final Session session;
-	private final RemoteProcess remoteProcess;
+	private RemoteProcess remoteProcess;
 	private boolean isUsed;
 	private Space space;
 	private BoardFileManager boardFileManager;
 	private SignTagData signTagData;
 
-	// todo onFinal(end)
 	public Board(Session session) {
 		this.session = session;
 		this.isUsed = false;
-		remoteProcess = new RemoteProcess(session.getMainProcess());
 	}
 
 	@Override
@@ -60,7 +56,7 @@ public abstract class Board extends BaseComponent {
 		return signTagData;
 	}
 
-	public @NotNull IControlProcess getProcess() {
+	public @NotNull RemoteProcess getProcess() {
 		return remoteProcess;
 	}
 
@@ -83,6 +79,9 @@ public abstract class Board extends BaseComponent {
 		setEnable(true);
 		isUsed = true;
 
+		remoteProcess = new RemoteProcess(this);
+		remoteProcess.registerListener(this);
+
 		// start exception
 
 		Debug.send(this, "start");
@@ -98,16 +97,16 @@ public abstract class Board extends BaseComponent {
 
 		// initialize players
 		Debug.send(this, "constructor");
-		constructor();
-		for (var p : getSession().getPlayers())
-			systemPlayerConstructor(p, InitializeType.COMPONENT_CONSTRUCTOR);
+
+		invokeSelfComponentConstructor();
+		invokeSelfPlayerConstructors();
 
 		Debug.send(this, "generate");
-		generate();
+		syncBukkitTask(this::generate);
 
 		// BoardStartEvent
 		var event = new BoardStartEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
+		callBukkitEvent(event);
 
 		new BoardWatchDogController(this).start();
 		new NoNaturalSpawnController(this).start();
@@ -123,11 +122,9 @@ public abstract class Board extends BaseComponent {
 
 		remoteProcess.destroy();
 
-		// initialize players
-		for (var p : getSession().getPlayers())
-			systemPlayerDestructor(p, UninitializedType.COMPONENT_DESTRUCTOR);
 		Debug.send(this, "destructor");
-		destructor();
+		invokeSelfPlayerDestructors();
+		invokeSelfComponentDestructor();
 
 		// degenerate
 		Debug.send(this, "degenerate");
@@ -138,7 +135,8 @@ public abstract class Board extends BaseComponent {
 
 		// BoardStopEvent
 		var event = new BoardStopEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
+		Bukkit.getPluginManager()
+		      .callEvent(event);
 	}
 
 	// Protected
@@ -152,13 +150,15 @@ public abstract class Board extends BaseComponent {
 
 	// Abstract
 	protected void generate() {
-		getSpace().getCenter().getBlock().setType(Material.BEDROCK);
+		getSpace().getCenter().getBlock()
+		          .setType(Material.BEDROCK);
 		if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
 			boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
 		}
 		if (signTagData != null) {
 			for (var l : signTagData.toLocations())
-				l.getBlock().setType(Material.AIR);
+				l.getBlock()
+				 .setType(Material.AIR);
 		}
 
 		// error
@@ -204,44 +204,26 @@ public abstract class Board extends BaseComponent {
 	}
 	// Private methods
 
-	@MustBeInvokedByOverriders
-	private void systemPlayerConstructor(Player player, InitializeType type) {
-		Debug.send(this, "playerConstructor " + player.getName() + ", " + type.name());
-		playerConstructor(player, type);
-		// recursive for player add
-		if (type == InitializeType.PLAYER_ADD) {
-			// controllers in
-			for (var controller : getProcess().getControllers()) {
-				reflectionSystemPlayerConstructor(controller, player, type);
-			}
-		}
-	}
-
-	@MustBeInvokedByOverriders
-	private void systemPlayerDestructor(Player player, UninitializedType type) {
-		// recursive for player remove
-		if (type == UninitializedType.PLAYER_REMOVE) {
-			// controllers in
-			for (var controller : getProcess().getControllers()) {
-				reflectionSystemPlayerDestructor(controller, player, type);
-			}
-		}
-		Debug.send(this, "playerDestructor " + player.getName() + ", " + type.name());
-		playerDestructor(player, type);
-	}
-
 	@Override
-	public void playerConstructor(Player player, InitializeType type) {
-		super.playerConstructor(player, type);
+	public void playerConstructor(PlayerConstructorEvent event) {
+		super.playerConstructor(event);
+		var player = event.getPlayer();
+		player.sendMessage("b");
 		player.teleport(getStartSpawnLocation());
 		player.setPlayerTime(getDefaultTime(), false);
 		player.setPlayerWeather(getDefaultWeather());
 	}
 
 	@Override
-	public void playerDestructor(Player player, UninitializedType type) {
-		super.playerDestructor(player, type);
+	public void playerDestructor(PlayerDestructorEvent event) {
+		super.playerDestructor(event);
+		var player = event.getPlayer();
 		player.resetPlayerWeather();
 		player.resetPlayerTime();
+	}
+
+	@Override
+	public RemoteProcess getParentProcess() {
+		return session.getProcess();
 	}
 }
