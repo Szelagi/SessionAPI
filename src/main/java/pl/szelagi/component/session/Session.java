@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.buildin.system.recovery.RecoveryPlayerController;
 import pl.szelagi.buildin.system.sessionsafecontrolplayers.SessionSafeControlPlayers;
 import pl.szelagi.buildin.system.sessionwatchdog.SessionWatchDogController;
@@ -50,11 +51,6 @@ public abstract class Session extends BaseComponent {
 	public Session(JavaPlugin plugin) {
 		this.plugin = plugin;
 		this.mainProcess = new MainProcess(this);
-	}
-
-	@Override
-	public final @NotNull Session getSession() {
-		return this;
 	}
 
 	@MustBeInvokedByOverriders
@@ -106,38 +102,7 @@ public abstract class Session extends BaseComponent {
 	}
 
 	@MustBeInvokedByOverriders
-	protected final void setBoard(Board board) {
-		//if (board.isUsed()) throw new BoardIsUsedException(); add to #Board.start()
-		currentBoard.stop();
-		currentBoard = board;
-		currentBoard.start();
-	}
-
-	public ArrayList<Player> getPlayers() {
-		return players;
-	}
-
-	public int getPlayerCount() {
-		return players.size();
-	}
-
-	@Nonnull
-	protected abstract Board getDefaultStartBoard();
-
-	public final @NotNull RemoteProcess getProcess() {
-		return remoteProcess;
-	}
-
-	public final @NotNull MainProcess getMainProcess() {
-		return mainProcess;
-	}
-
-	public final Board getCurrentBoard() {
-		return currentBoard;
-	}
-
-	@MustBeInvokedByOverriders
-	public void addPlayer(Player player) throws PlayerJoinException {
+	public final void addPlayer(Player player) throws PlayerJoinException {
 		PlayerIsNotAliveException.check(player);
 		PlayerInSessionException.check(player);
 		var canJoinEvent = new PlayerCanJoinEvent(player, getPlayers(), JoinType.PLUGIN);
@@ -158,7 +123,7 @@ public abstract class Session extends BaseComponent {
 	}
 
 	@MustBeInvokedByOverriders
-	public void removePlayer(Player player) throws PlayerQuitException {
+	public final void removePlayer(Player player) throws PlayerQuitException {
 		PlayerNoInThisSession.check(this, player);
 		var canPlayerQuit = new PlayerCanQuitEvent(player, getPlayers(), QuitType.PLUGIN_FORCE);
 		getProcess().invokeAllListeners(canPlayerQuit);
@@ -177,6 +142,53 @@ public abstract class Session extends BaseComponent {
 		getProcess().invokeAllListeners(quitEvent);
 	}
 
+	@MustBeInvokedByOverriders
+	protected final void setBoard(Board board) {
+		//if (board.isUsed()) throw new BoardIsUsedException(); add to #Board.start()
+		currentBoard.stop();
+		currentBoard = board;
+		currentBoard.start();
+	}
+
+	public final @NotNull ArrayList<Player> getPlayers() {
+		return players;
+	}
+
+	public final int getPlayerCount() {
+		return players.size();
+	}
+
+	public final @NotNull RemoteProcess getProcess() {
+		return remoteProcess;
+	}
+
+	public final @NotNull MainProcess getMainProcess() {
+		return mainProcess;
+	}
+
+	public final Board getCurrentBoard() {
+		return currentBoard;
+	}
+
+	@Override
+	public final @NotNull JavaPlugin getPlugin() {
+		return plugin;
+	}
+
+	@Override
+	public @Nullable RemoteProcess getParentProcess() {
+		return null;
+	}
+
+	@Override
+	public final @NotNull Session getSession() {
+		return this;
+	}
+
+	public final void saveRecovery() {
+		recoveryPlayerController.save();
+	}
+
 	public final void systemSessionConstructor(ComponentConstructorEvent event) {
 		new SessionWatchDogController(this).start();
 		new SessionSafeControlPlayers(this).start();
@@ -186,18 +198,5 @@ public abstract class Session extends BaseComponent {
 		getProcess().runControlledTaskTimer(mainProcess::optimiseTasks, Time.Seconds(60), Time.Seconds((60)));
 	}
 
-	public void forceSaveRecovery() {
-		recoveryPlayerController.save();
-	}
-
-	@NotNull
-	@Override
-	public final JavaPlugin getPlugin() {
-		return plugin;
-	}
-
-	@Override
-	public RemoteProcess getParentProcess() {
-		return null;
-	}
+	protected abstract @Nonnull Board getDefaultStartBoard();
 }

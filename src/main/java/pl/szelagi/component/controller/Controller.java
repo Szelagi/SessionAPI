@@ -5,6 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.baseexception.StartException;
@@ -16,8 +17,6 @@ import pl.szelagi.component.controller.event.ControllerStopEvent;
 import pl.szelagi.component.session.Session;
 import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.util.Debug;
-
-import javax.annotation.Nullable;
 
 public abstract class Controller extends BaseComponent {
 	private final JavaPlugin plugin;
@@ -37,23 +36,6 @@ public abstract class Controller extends BaseComponent {
 		this.plugin = session.getPlugin();
 		this.session = session;
 		this.parentProcess = parentProcess;
-	}
-
-	public @NotNull RemoteProcess getProcess() {
-		return remoteProcess;
-	}
-
-	public @NotNull JavaPlugin getPlugin() {
-		return plugin;
-	}
-
-	public @NotNull Session getSession() {
-		return session;
-	}
-
-	@Nullable
-	public Listener getListener() {
-		return null;
 	}
 
 	@MustBeInvokedByOverriders
@@ -98,7 +80,23 @@ public abstract class Controller extends BaseComponent {
 		      .callEvent(event);
 	}
 
-	public RemoteProcess getParentProcess() {
+	public final @NotNull RemoteProcess getProcess() {
+		return remoteProcess;
+	}
+
+	public final @NotNull JavaPlugin getPlugin() {
+		return plugin;
+	}
+
+	public final @NotNull Session getSession() {
+		return session;
+	}
+
+	public final @NotNull RemoteProcess getParentProcess() {
 		return parentProcess;
+	}
+
+	public @Nullable Listener getListener() {
+		return null;
 	}
 }

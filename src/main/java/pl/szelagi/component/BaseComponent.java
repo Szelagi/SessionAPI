@@ -5,6 +5,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.session.Session;
@@ -37,19 +38,19 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	private final String name = generateName();
 	private boolean isEnable = false;
 
-	public boolean isEnable() {
+	public final boolean isEnable() {
 		return isEnable;
 	}
 
-	protected void setEnable(boolean enable) {
+	protected final void setEnable(boolean enable) {
 		isEnable = enable;
 	}
 
-	public UUID getUuid() {
+	public final UUID getUuid() {
 		return uuid;
 	}
 
-	public long getId() {
+	public final long getId() {
 		return id;
 	}
 
@@ -81,9 +82,7 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 		           .getSimpleName() + getComponentTypeChar() + '#' + pluginName;
 	}
 
-	public abstract RemoteProcess getParentProcess();
-
-	protected void callBukkitEvent(Event event) {
+	protected final void callBukkitEvent(Event event) {
 		getPlugin().getServer().getScheduler()
 		           .runTask(getPlugin(), () -> getPlugin()
 				           .getServer()
@@ -91,7 +90,7 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 				           .callEvent(event));
 	}
 
-	protected void syncBukkitTask(Runnable runnable) {
+	protected final void syncBukkitTask(Runnable runnable) {
 		getPlugin().getServer().getScheduler()
 		           .runTask(getPlugin(), runnable);
 	}
@@ -102,23 +101,23 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 		                 .collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	protected void invokeSelfPlayerConstructors() {
+	protected final void invokeSelfPlayerConstructors() {
 		var players = getSession().getPlayers();
 		var clone = new ArrayList<>(players);
 		clone.forEach((p) -> invokeSelfPlayerConstructor(p, players));
 	}
 
-	protected void invokeSelfPlayerDestructors() {
+	protected final void invokeSelfPlayerDestructors() {
 		var players = getSession().getPlayers();
 		var clone = new ArrayList<>(players);
 		clone.forEach((p) -> invokeSelfPlayerDestructor(p, players));
 	}
 
-	protected void invokeSelfComponentConstructor() {
+	protected final void invokeSelfComponentConstructor() {
 		getProcess().invokeSelfListeners(new ComponentConstructorEvent(this, getSession().getPlayers()));
 	}
 
-	protected void invokeSelfComponentDestructor() {
+	protected final void invokeSelfComponentDestructor() {
 		getProcess().invokeSelfListeners(new ComponentDestructorEvent(this, getSession().getPlayers()));
 	}
 
@@ -154,4 +153,6 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 
 	@MustBeInvokedByOverriders
 	public void playerDestructorRecovery(PlayerRecoveryEvent event) {}
+
+	public abstract @Nullable RemoteProcess getParentProcess();
 }

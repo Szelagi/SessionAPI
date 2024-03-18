@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.WeatherType;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -28,9 +27,6 @@ import pl.szelagi.tag.SignTagData;
 import pl.szelagi.util.Debug;
 import pl.szelagi.world.SessionWorldManager;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 public abstract class Board extends BaseComponent {
 	public final static String SCHEMATIC_CONSTRUCTOR_NAME = "constructor";
 	public final static String SCHEMATIC_DESTRUCTOR_NAME = "destructor";
@@ -46,29 +42,6 @@ public abstract class Board extends BaseComponent {
 		this.session = session;
 		this.isUsed = false;
 	}
-
-	@Override
-	public @NotNull Session getSession() {
-		return session;
-	}
-
-	public SignTagData getSignTagData() {
-		return signTagData;
-	}
-
-	public @NotNull RemoteProcess getProcess() {
-		return remoteProcess;
-	}
-
-	public @NotNull JavaPlugin getPlugin() {
-		return getSession().getPlugin();
-	}
-
-	public @NotNull BoardFileManager getSchematicStorage() {
-		return boardFileManager;
-	}
-
-	// Start and stop
 
 	@MustBeInvokedByOverriders
 	public void start() throws StartException {
@@ -139,16 +112,6 @@ public abstract class Board extends BaseComponent {
 		      .callEvent(event);
 	}
 
-	// Protected
-	protected Location getBase() {
-		return getSpace().getCenter();
-	}
-
-	public Space getSpace() {
-		return space;
-	}
-
-	// Abstract
 	protected void generate() {
 		getSpace().getCenter().getBlock()
 		          .setType(Material.BEDROCK);
@@ -160,17 +123,6 @@ public abstract class Board extends BaseComponent {
 				l.getBlock()
 				 .setType(Material.AIR);
 		}
-
-		// error
-		//            var spatial = schematicStorage.loadSpatial(SCHEMATIC_CONSTRUCTOR_NAME);
-		//            for (var p : Bukkit.getServer().getOnlinePlayers()) p.sendMessage(spatial.getCenter().toString());
-		//            for (var p : Bukkit.getServer().getOnlinePlayers()) p.sendMessage(getSpace().getCenter().toString());
-		//            processedData = PreProcessor.process(spatial);
-		//            signTagData = SignTagAnalyzer.process(getSpace());
-		//
-		//        } else {
-		//            signTagData = SignTagAnalyzer.process(getSpace());
-
 	}
 
 	protected void degenerate() {
@@ -180,35 +132,60 @@ public abstract class Board extends BaseComponent {
 			entity.remove();
 	}
 
+	public final Location getBase() {
+		return getSpace().getCenter();
+	}
+
+	public final Space getSpace() {
+		return space;
+	}
+
+	@Override
+	public final @NotNull Session getSession() {
+		return session;
+	}
+
+	public final @NotNull SignTagData getSignTagData() {
+		return signTagData;
+	}
+
+	public final @NotNull RemoteProcess getProcess() {
+		return remoteProcess;
+	}
+
+	public final @NotNull JavaPlugin getPlugin() {
+		return getSession().getPlugin();
+	}
+
+	public final @NotNull BoardFileManager getSchematicStorage() {
+		return boardFileManager;
+	}
+
+	public final boolean isUsed() {
+		return isUsed;
+	}
+
+	@Override
+	public final @NotNull RemoteProcess getParentProcess() {
+		return session.getProcess();
+	}
+
 	protected int getDefaultTime() {
 		return 0;
 	}
 
-	@Nullable
-	public Listener getListener() {
-		return null;
-	}
-
-	@Nonnull
-	protected WeatherType getDefaultWeather() {
+	protected @NotNull WeatherType getDefaultWeather() {
 		return WeatherType.CLEAR;
 	}
 
-	protected Location getStartSpawnLocation() {
+	protected @NotNull Location getStartSpawnLocation() {
 		return getSpace().getAbove(getSpace().getCenter());
 	}
-
-	// Public methods
-	public boolean isUsed() {
-		return isUsed;
-	}
-	// Private methods
 
 	@Override
 	public void playerConstructor(PlayerConstructorEvent event) {
 		super.playerConstructor(event);
 		var player = event.getPlayer();
-		player.sendMessage("b");
 		player.teleport(getStartSpawnLocation());
 		player.setPlayerTime(getDefaultTime(), false);
 		player.setPlayerWeather(getDefaultWeather());
@@ -220,10 +197,5 @@ public abstract class Board extends BaseComponent {
 		var player = event.getPlayer();
 		player.resetPlayerWeather();
 		player.resetPlayerTime();
-	}
-
-	@Override
-	public RemoteProcess getParentProcess() {
-		return session.getProcess();
 	}
 }
