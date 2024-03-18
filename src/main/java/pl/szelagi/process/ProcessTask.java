@@ -6,10 +6,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class ProcessTask implements BukkitTask {
 	private final BukkitTask bukkitTask;
-	private final Process process;
+	private final RemoteProcess remoteProcess;
 
-	public ProcessTask(Process process, BukkitTask bukkitTask) {
-		this.process = process;
+	public ProcessTask(RemoteProcess remoteProcess, BukkitTask bukkitTask) {
+		this.remoteProcess = remoteProcess;
 		this.bukkitTask = bukkitTask;
 	}
 
@@ -35,6 +35,10 @@ public class ProcessTask implements BukkitTask {
 
 	@Override
 	public void cancel() {
-		process.stopControlledTask(bukkitTask);
+		remoteProcess.stopControlledTask(this);
+	}
+
+	public BukkitTask getBukkitTask() {
+		return bukkitTask;
 	}
 }
