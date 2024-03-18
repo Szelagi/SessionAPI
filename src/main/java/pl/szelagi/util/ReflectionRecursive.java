@@ -4,6 +4,9 @@ package pl.szelagi.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 
 public class ReflectionRecursive {
 	@Deprecated
@@ -18,7 +21,8 @@ public class ReflectionRecursive {
 			try {
 				method = currentClass.getDeclaredMethod(name, parameterTypes);
 				return method;
-			} catch (NoSuchMethodException ignore) {
+			} catch (
+					NoSuchMethodException ignore) {
 			}
 		} while ((currentClass = currentClass.getSuperclass()) != null);
 		throw new NoSuchMethodException("ReflectionRecursive no such method '" + name + "' in class" + classType.getName());
@@ -36,9 +40,30 @@ public class ReflectionRecursive {
 			try {
 				field = currentClass.getDeclaredField(name);
 				return field;
-			} catch (NoSuchFieldException ignore) {
+			} catch (
+					NoSuchFieldException ignore) {
 			}
 		} while ((currentClass = currentClass.getSuperclass()) != null);
 		throw new NoSuchFieldException("ReflectionRecursive no such field  '" + name + "' in class " + classType.getName());
+	}
+
+	public static Collection<Method> getEventMethods(Class<?> classType, Class<?> parameterType) throws SecurityException {
+		HashMap<String, Method> methodHashMap = new HashMap<>();
+
+		Class<?> currentClass = classType;
+		do {
+			Arrays
+					.stream(currentClass.getMethods())
+					.filter(m -> m.getReturnType()
+					              .equals(void.class))
+					.filter(m -> m.getParameterCount() == 1)
+					.filter(m -> m.getParameterTypes()[0].equals(parameterType))
+					.forEach(method -> {
+						if (methodHashMap.containsKey(method.getName()))
+							return;
+						methodHashMap.put(method.getName(), method);
+					});
+		} while ((currentClass = currentClass.getSuperclass()) != null);
+		return methodHashMap.values();
 	}
 }
