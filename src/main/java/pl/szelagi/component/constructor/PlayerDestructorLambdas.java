@@ -8,9 +8,9 @@ public class PlayerDestructorLambdas extends PlayerRecoveryLambdas<PlayerDestruc
 		return (PlayerDestructorLambdas) super.add(lambda);
 	}
 
-	public void runAll(Player player, UninitializedType type) {
+	public void runAll(Player player) {
 		for (var l : getLambdas()) {
-			l.run(player, type);
+			l.run(player);
 		}
 	}
 }
