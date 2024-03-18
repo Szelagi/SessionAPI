@@ -6,10 +6,11 @@ import org.jetbrains.annotations.Nullable;
 import pl.szelagi.state.InstanceCreator;
 import pl.szelagi.state.PlayerState;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
-public class PlayerManualContainer<T extends PlayerState> {
+public class PlayerManualContainer<T extends PlayerState> implements Serializable {
 	private final HashMap<Player, T> map = new HashMap<>();
 
 	@NotNull
@@ -41,6 +42,8 @@ public class PlayerManualContainer<T extends PlayerState> {
 	}
 
 	public @Nullable T find(Predicate<T> predicate) {
-		return map.values().stream().filter(predicate).findFirst().orElse(null);
+		return map.values().stream()
+		          .filter(predicate).findFirst()
+		          .orElse(null);
 	}
 }
