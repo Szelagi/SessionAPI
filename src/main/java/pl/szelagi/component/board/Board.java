@@ -176,7 +176,7 @@ public abstract class Board extends BaseComponent {
 	protected void degenerate() {
 		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME))
 			boardFileManager.loadSchematic(SCHEMATIC_DESTRUCTOR_NAME);
-		for (var entity : getSpace().getEntitiesIn())
+		for (var entity : getSpace().getMobsIn())
 			entity.remove();
 	}
 
