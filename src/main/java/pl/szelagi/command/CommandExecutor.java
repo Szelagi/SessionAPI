@@ -66,13 +66,18 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 				player.sendMessage("§7§oSaving...");
 				long millis = System.currentTimeMillis();
 
-				ISpatial optimized = creatorBoard.getStorage().toOptimizedSpatial();
+				ISpatial optimized = creatorBoard
+						.getStorage()
+						.toOptimizedSpatial();
 
-				creatorBoard.getStorage().saveSchematic(Board.SCHEMATIC_CONSTRUCTOR_NAME, optimized);
-				creatorBoard.getStorage().saveEmptySchematic(Board.SCHEMATIC_DESTRUCTOR_NAME, optimized);
+				creatorBoard.getStorage()
+				            .saveSchematic(Board.SCHEMATIC_CONSTRUCTOR_NAME, optimized);
+				creatorBoard.getStorage()
+				            .saveEmptySchematic(Board.SCHEMATIC_DESTRUCTOR_NAME, optimized);
 
 				var data = SignTagAnalyzer.process(creatorBoard.getSpace());
-				creatorBoard.getStorage().saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
+				creatorBoard.getStorage()
+				            .saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
 
 				long deltaMillis = System.currentTimeMillis() - millis;
 				player.sendMessage("§aSaved §f(" + deltaMillis + "ms)");
@@ -83,13 +88,13 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 					return false;
 				}
 				var directoryName = strings[0];
-				var players = new ArrayList<Player>();
-				players.add(player);
-				var creator = new Creator(plugin, players, directoryName);
+				var creator = new Creator(plugin, directoryName);
 				try {
 					creator.start();
+					creator.addPlayer(player);
 					player.sendMessage("§aOK");
-				} catch (SessionStartException e) {
+				} catch (
+						SessionStartException e) {
 					player.sendMessage("§cEditor start exception: §f" + e.getMessage());
 				}
 				return true;
@@ -177,10 +182,13 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 					return false;
 				}
 				var findName = strings[0];
-				var session = SessionManager.getSessions().stream().filter(loopSession -> {
-					var name = loopSession.getName() + ":" + loopSession.getId();
-					return findName.equals(name);
-				}).findFirst().orElse(null);
+				var session = SessionManager
+						.getSessions().stream()
+						.filter(loopSession -> {
+							var name = loopSession.getName() + ":" + loopSession.getId();
+							return findName.equals(name);
+						}).findFirst()
+						.orElse(null);
 				if (session == null) {
 					player.sendMessage("§cNot found session with pattern: '" + strings[0] + "'!");
 					return false;
@@ -189,10 +197,13 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 			}
 			case "test-session" -> {
 				try {
-					var players = new ArrayList<Player>(plugin.getServer().getOnlinePlayers());
+					var players = new ArrayList<Player>(plugin
+							                                    .getServer()
+							                                    .getOnlinePlayers());
 					new TestSession(plugin, players).start();
 					player.sendMessage("§aOK");
-				} catch (SessionStartException e) {
+				} catch (
+						SessionStartException e) {
 					player.sendMessage("§cSession start exception: §f" + e.getMessage());
 				}
 			}
