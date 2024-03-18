@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import pl.szelagi.buildin.controller.OtherEquipment.OtherEquipment;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.Session;
+import pl.szelagi.event.component.ComponentConstructorEvent;
 
 public class TestBoard extends Board {
 	public TestBoard(Session session) {
@@ -16,8 +17,8 @@ public class TestBoard extends Board {
 	}
 
 	@Override
-	public void constructor() {
-		super.constructor();
-		new OtherEquipment(this, true).start();
+	public void componentConstructor(ComponentConstructorEvent event) {
+		super.componentConstructor(event);
+		new OtherEquipment(this, false).start();
 	}
 }

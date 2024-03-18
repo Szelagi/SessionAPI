@@ -2,14 +2,13 @@ package pl.szelagi.buildin.creator;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.buildin.controller.NoCreatureDropController.NoCreatureDropController;
 import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.board.filemanager.BoardFileManager;
-import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.session.Session;
+import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
 
 public class CreatorBoard extends Board {
 	private final String editName;
@@ -29,7 +28,8 @@ public class CreatorBoard extends Board {
 		for (var b : getSpace().getBlocksInArea())
 			b.setType(Material.AIR);
 		this.storage = new BoardFileManager(editName, getSpace());
-		getBase().getBlock().setType(Material.BEDROCK);
+		getBase().getBlock()
+		         .setType(Material.BEDROCK);
 		if (storage.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME))
 			storage.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
 	}
@@ -38,7 +38,7 @@ public class CreatorBoard extends Board {
 	protected void degenerate() {
 		for (var b : getSpace().getBlocksInArea())
 			b.setType(Material.AIR);
-		for (var entity : getSpace().getEntitiesIn())
+		for (var entity : getSpace().getMobsIn())
 			entity.remove();
 	}
 
@@ -56,8 +56,10 @@ public class CreatorBoard extends Board {
 	}
 
 	@Override
-	public void playerConstructor(Player player, InitializeType type) {
-		super.playerConstructor(player, type);
+	public void playerConstructor(PlayerConstructorEvent event) {
+		super.playerConstructor(event);
+		var player = event.getPlayer();
+		player.sendMessage("c");
 		player.setGameMode(GameMode.CREATIVE);
 	}
 }

@@ -3,10 +3,10 @@ package pl.szelagi.component;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.session.Session;
-import pl.szelagi.process.IControlProcess;
+import pl.szelagi.process.RemoteProcess;
 
 public interface ISessionComponent {
-	@NotNull IControlProcess getProcess();
+	@NotNull RemoteProcess getProcess();
 
 	@NotNull Session getSession();
 

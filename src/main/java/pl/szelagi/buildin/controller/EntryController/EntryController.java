@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
+import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.util.event.Event;
 import pl.szelagi.util.timespigot.Time;
 
@@ -12,7 +13,8 @@ public class EntryController extends Controller {
 	private final double radius;
 	private final boolean isAutoDisable;
 	private final long refreshTicks;
-	@NotNull private final Event<PlayerEntryEvent> playerEntryEventEvent = new Event<>();
+	@NotNull
+	private final Event<PlayerEntryEvent> playerEntryEventEvent = new Event<>();
 
 	public EntryController(ISessionComponent component, Location location, double radius) {
 		this(component, location, Time.Ticks(1), radius, true);
@@ -27,12 +29,13 @@ public class EntryController extends Controller {
 	}
 
 	@Override
-	public void constructor() {
-		super.constructor();
+	public void componentConstructor(ComponentConstructorEvent event) {
+		super.componentConstructor(event);
 		getProcess().runControlledTaskTimer(() -> {
 			var players = location.getNearbyPlayers(radius);
 			if (!players.isEmpty()) {
-				playerEntryEventEvent.call(c -> c.run(this, players.iterator().next()));
+				playerEntryEventEvent.call(c -> c.run(this, players
+						.iterator().next()));
 				if (isAutoDisable)
 					stop();
 			}

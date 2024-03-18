@@ -2,11 +2,11 @@ package pl.szelagi.buildin.controller.OtherEquipment;
 
 import org.bukkit.entity.Player;
 import pl.szelagi.component.ISessionComponent;
-import pl.szelagi.component.constructor.InitializeType;
 import pl.szelagi.component.constructor.PlayerDestructorLambda;
-import pl.szelagi.component.constructor.PlayerDestructorLambdas;
-import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.Controller;
+import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
+import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
+import pl.szelagi.event.player.recovery.PlayerRecoveryEvent;
 import pl.szelagi.state.PlayerContainer;
 
 public class OtherEquipment extends Controller {
@@ -24,8 +24,9 @@ public class OtherEquipment extends Controller {
 	}
 
 	@Override
-	public void playerConstructor(Player player, InitializeType type) {
-		super.playerConstructor(player, type);
+	public void playerConstructor(PlayerConstructorEvent event) {
+		super.playerConstructor(event);
+		var player = event.getPlayer();
 		eqStatePlayerContainer.get(player).save();
 		if (isClearEquipment) {
 			player.getInventory().clear();
@@ -42,20 +43,20 @@ public class OtherEquipment extends Controller {
 
 	private PlayerDestructorLambda getPlayerDestructor(Player forPlayer) {
 		var state = eqStatePlayerContainer.get(forPlayer);
-		return (player, type) -> {
-			state.load(player);
-		};
+		return state::load;
 	}
 
 	@Override
-	public void playerDestructor(Player player, UninitializedType type) {
-		super.playerDestructor(player, type);
-		getPlayerDestructor(player).run(player, type);
+	public void playerDestructor(PlayerDestructorEvent event) {
+		super.playerDestructor(event);
+		var player = event.getPlayer();
+		getPlayerDestructor(player).run(player);
 	}
 
 	@Override
-	public PlayerDestructorLambdas getPlayerDestructorRecovery(Player forPlayer) {
-		var lambda = getPlayerDestructor(forPlayer);
-		return super.getPlayerDestructorRecovery(forPlayer).add(lambda);
+	public void playerDestructorRecovery(PlayerRecoveryEvent event) {
+		super.playerDestructorRecovery(event);
+		var lambda = getPlayerDestructor(event.getForPlayer());
+		event.getLambdas().add(lambda);
 	}
 }

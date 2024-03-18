@@ -12,6 +12,7 @@ import pl.szelagi.buildin.controller.EntityController.event.EntityDeathEvent;
 import pl.szelagi.buildin.controller.EntityController.event.ForceStopEvent;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
+import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.util.event.Event;
 
 import java.util.ArrayList;
@@ -21,10 +22,14 @@ public class EntityController extends Controller {
 	private final ArrayList<EntityBuild> entityBuilds;
 	private final ArrayList<LivingEntity> entities;
 	// events
-	@NotNull private final Event<EntityDeathEvent> entityDeathEvent = new Event<>();
-	@NotNull private final Event<EntitiesClearEvent> entitiesClearEvent = new Event<>();
-	@NotNull private final Event<ForceStopEvent> forceStopEventEvent = new Event<>();
-	@NotNull private final Event<EntityDamageByEntityEvent> entityDamageByEntityEvent = new Event<>();
+	@NotNull
+	private final Event<EntityDeathEvent> entityDeathEvent = new Event<>();
+	@NotNull
+	private final Event<EntitiesClearEvent> entitiesClearEvent = new Event<>();
+	@NotNull
+	private final Event<ForceStopEvent> forceStopEventEvent = new Event<>();
+	@NotNull
+	private final Event<EntityDamageByEntityEvent> entityDamageByEntityEvent = new Event<>();
 
 	public EntityController(ISessionComponent component, @NotNull EntityBuild... builds) {
 		super(component);
@@ -49,8 +54,8 @@ public class EntityController extends Controller {
 	}
 
 	@Override
-	public void constructor() {
-		super.constructor();
+	public void componentConstructor(ComponentConstructorEvent event) {
+		super.componentConstructor(event);
 		Location location;
 		World world;
 		int spawnCount;
@@ -73,7 +78,8 @@ public class EntityController extends Controller {
 
 	protected void removeEntity(LivingEntity entity) {
 		entities.remove(entity);
-		entity.getLocation().getWorld().getEntities().remove(entity);
+		entity.getLocation().getWorld()
+		      .getEntities().remove(entity);
 		if (entities.isEmpty())
 			stop();
 	}
@@ -85,18 +91,21 @@ public class EntityController extends Controller {
 	}
 
 	@Override
-	public void destructor() {
-		super.destructor();
+	protected void invokeSelfComponentDestructor() {
+		super.invokeSelfComponentDestructor();
 		var type = entities.isEmpty() ? EntityControllerFinalizeType.CLEAR : EntityControllerFinalizeType.FORCE;
 		var cloneArrayEntities = new ArrayList<>(entities);
 		entities.clear();
 		for (var entity : cloneArrayEntities) {
-			entity.getLocation().getWorld().getEntities().remove(entity);
+			entity.getLocation().getWorld()
+			      .getEntities().remove(entity);
 			entity.setHealth(0);
 		}
 		switch (type) {
-			case CLEAR -> entitiesClearEvent.call(c -> c.run(this));
-			case FORCE -> forceStopEventEvent.call(c -> c.run(this));
+			case CLEAR ->
+					entitiesClearEvent.call(c -> c.run(this));
+			case FORCE ->
+					forceStopEventEvent.call(c -> c.run(this));
 		}
 	}
 

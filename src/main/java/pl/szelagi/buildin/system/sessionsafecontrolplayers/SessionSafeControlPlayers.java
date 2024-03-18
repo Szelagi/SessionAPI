@@ -1,13 +1,12 @@
 package pl.szelagi.buildin.system.sessionsafecontrolplayers;
 
-import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.ISessionComponent;
-import pl.szelagi.component.constructor.InitializeType;
-import pl.szelagi.component.constructor.PlayerDestructorLambdas;
-import pl.szelagi.component.constructor.UninitializedType;
 import pl.szelagi.component.controller.Controller;
+import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
+import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
+import pl.szelagi.event.player.recovery.PlayerRecoveryEvent;
 import pl.szelagi.state.PlayerContainer;
 
 import java.util.ArrayList;
@@ -22,26 +21,30 @@ public class SessionSafeControlPlayers extends Controller {
 	}
 
 	@Override
-	public void playerConstructor(Player player, InitializeType type) {
-		super.playerConstructor(player, type);
-		stateContainer.get(player).save();
+	public void playerConstructor(PlayerConstructorEvent event) {
+		super.playerConstructor(event);
+		stateContainer.get(event.getPlayer())
+		              .save();
 	}
 
 	@Override
-	public void playerDestructor(Player player, UninitializedType type) {
+	public void playerDestructor(PlayerDestructorEvent event) {
+		super.playerDestructor(event);
+		var player = event.getPlayer();
 		var state = stateContainer.get(player);
-		super.playerDestructor(player, type);
 		player.setFallDistance(0);
 		player.setFireTicks(0);
 		for (var potionType : NEGATIVE_POTION_TYPES)
 			player.removePotionEffect(potionType);
+		player.sendMessage("LOAD");
 		state.load(player);
 	}
 
 	@Override
-	public PlayerDestructorLambdas getPlayerDestructorRecovery(Player forPlayer) {
-		var state = stateContainer.get(forPlayer);
-		return super.getPlayerDestructorRecovery(forPlayer).add((player, type) -> {
+	public void playerDestructorRecovery(PlayerRecoveryEvent event) {
+		super.playerDestructorRecovery(event);
+		var state = stateContainer.get(event.getForPlayer());
+		event.getLambdas().add(player -> {
 			player.setFallDistance(0);
 			player.setFireTicks(0);
 			for (var potionType : NEGATIVE_POTION_TYPES)
