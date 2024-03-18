@@ -1,15 +1,16 @@
 package pl.szelagi.process;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
-import pl.szelagi.component.controller.Controller;
+import pl.szelagi.process.exception.MultiDestroyException;
+import pl.szelagi.process.exception.MultiRegisterException;
+import pl.szelagi.process.exception.NotFoundUnregisterException;
 
 import java.util.ArrayList;
 
-public abstract class Process implements IControlProcess {
+public abstract class Process {
+	private boolean isDestroyed;
 	private final JavaPlugin plugin;
-	private final ArrayList<BukkitTask> tasks = new ArrayList<>();
-	private final ArrayList<Controller> controllers = new ArrayList<>();
+	private final ArrayList<RemoteProcess> remoteProcesses = new ArrayList<>();
 
 	public Process(JavaPlugin plugin) {
 		this.plugin = plugin;
@@ -19,19 +20,32 @@ public abstract class Process implements IControlProcess {
 		return plugin;
 	}
 
-	public ArrayList<BukkitTask> getTasks() {
-		return tasks;
+	public ArrayList<RemoteProcess> getRemoteProcesses() {
+		return remoteProcesses;
 	}
 
-	public ArrayList<Controller> getControllers() {
-		return controllers;
+	public void registerRemoteProcess(RemoteProcess process) throws MultiRegisterException {
+		if (getRemoteProcesses().contains(process))
+			throw new MultiRegisterException("");
+		getRemoteProcesses().add(process);
 	}
 
-	public abstract void destroy();
+	public void unregisterRemoteProcess(RemoteProcess process) throws NotFoundUnregisterException {
+		var removed = getRemoteProcesses().remove(process);
+		if (!removed)
+			throw new NotFoundUnregisterException("");
+	}
 
-	public abstract void optimiseTasks();
+	/**
+	 * destroys current process and all child elements hierarchy
+	 */
+	public abstract void destroy() throws MultiDestroyException;
 
-	protected abstract void stopAllControllers();
+	public boolean isDestroyed() {
+		return isDestroyed;
+	}
 
-	protected abstract void stopAllTasks();
+	public void setDestroyed() {
+		isDestroyed = true;
+	}
 }
