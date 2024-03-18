@@ -13,6 +13,7 @@ import pl.szelagi.buildin.controller.EntityController.event.ForceStopEvent;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.event.component.ComponentConstructorEvent;
+import pl.szelagi.event.component.ComponentDestructorEvent;
 import pl.szelagi.util.event.Event;
 
 import java.util.ArrayList;
@@ -91,8 +92,8 @@ public class EntityController extends Controller {
 	}
 
 	@Override
-	protected void invokeSelfComponentDestructor() {
-		super.invokeSelfComponentDestructor();
+	public void componentDestructor(ComponentDestructorEvent event) {
+		super.componentDestructor(event);
 		var type = entities.isEmpty() ? EntityControllerFinalizeType.CLEAR : EntityControllerFinalizeType.FORCE;
 		var cloneArrayEntities = new ArrayList<>(entities);
 		entities.clear();
