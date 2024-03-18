@@ -7,7 +7,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.controller.event.ControllerStartEvent;
 import pl.szelagi.component.controller.event.ControllerStopEvent;
@@ -34,7 +33,8 @@ public class ControllerManager {
 				ControllerManager.onControllerStop(event.getController());
 			}
 		}
-		Bukkit.getPluginManager().registerEvents(new MyControllerManager(), p);
+		Bukkit.getPluginManager()
+		      .registerEvents(new MyControllerManager(), p);
 	}
 
 	private static int controllerEnableCount(String name) {
@@ -78,7 +78,8 @@ public class ControllerManager {
 				return;
 			CONTROLLER_LISTENER_MAP.put(name, listener);
 		}
-		Bukkit.getPluginManager().registerEvents(listener, plugin);
+		Bukkit.getPluginManager()
+		      .registerEvents(listener, plugin);
 	}
 
 	private static void stopControllerListener(Controller controller) {
@@ -99,27 +100,20 @@ public class ControllerManager {
 	//
 	//    }
 
-	@NotNull
-	public static <T extends Controller> ArrayList<T> getAllControllers(@Nullable Session session, @NotNull Class<T> classType) {
-		if (session == null)
-			return new ArrayList<>();
-		var list = session.getMainProcess().getControllers().stream().filter(classType::isInstance).map(classType::cast).toList();
-		return new ArrayList<>(list);
-	}
-
 	// Enable controller
 	@NotNull
-	public static <T extends Controller> ArrayList<T> getControllers(@Nullable Session session, @NotNull Class<T> classType) {
+	public static <T extends Controller> ArrayList<T> getControllers(@Nullable Session session, @NotNull Class<T> clazz) {
 		if (session == null)
 			return new ArrayList<>();
-		var list = session.getMainProcess().getControllers().stream().filter(BaseComponent::isEnable).filter(classType::isInstance).map(classType::cast).toList();
-		return new ArrayList<>(list);
+		return session.getMainProcess()
+		              .getControllers(clazz);
 	}
 
 	@Nullable
-	public static <T extends Controller> T getFirstController(@Nullable Session session, @NotNull Class<T> classType) {
+	public static <T extends Controller> T getFirstController(@Nullable Session session, @NotNull Class<T> clazz) {
 		if (session == null)
 			return null;
-		return session.getMainProcess().getControllers().stream().filter(BaseComponent::isEnable).filter(classType::isInstance).map(classType::cast).findFirst().orElse(null);
+		return session.getMainProcess()
+		              .getFirstController(clazz);
 	}
 }
