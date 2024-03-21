@@ -58,14 +58,12 @@ public abstract class Session extends BaseComponent {
 		if (isEnable())
 			throw new MultiStartException(this);
 		setEnable(true);
+		Debug.send(this, "start");
+
 		remoteProcess = new RemoteProcess(mainProcess);
 		remoteProcess.registerListener(this);
 
-		Debug.send(this, "start");
 		currentBoard = getDefaultStartBoard();
-
-		// initialize consturcot
-		Debug.send(this, "constructor");
 
 		invokeSelfComponentConstructor();
 		invokeSelfPlayerConstructors();
@@ -80,21 +78,18 @@ public abstract class Session extends BaseComponent {
 	public void stop(StopCause cause) throws SessionStopException {
 		if (!isEnable())
 			throw new MultiStopException(this);
-
+		setEnable(false);
 		Debug.send(this, "stop");
-
-		//stop and destroy all tasks
-		remoteProcess.destroy();
-		mainProcess.destroy();
 
 		var playersArrayCopy = new ArrayList<>(players);
 		playersArrayCopy.forEach(this::removePlayer);
 
-		Debug.send(this, "destructor");
 		invokeSelfPlayerDestructors();
 		invokeSelfComponentDestructor();
 
-		setEnable(false);
+		//stop and destroy all tasks
+		remoteProcess.destroy();
+		mainProcess.destroy();
 
 		var event = new SessionStopEvent(this);
 		Bukkit.getPluginManager()
@@ -105,6 +100,7 @@ public abstract class Session extends BaseComponent {
 	public final void addPlayer(Player player) throws PlayerJoinException {
 		PlayerIsNotAliveException.check(player);
 		PlayerInSessionException.check(player);
+		Debug.send(this, "try add player");
 		var canJoinEvent = new PlayerCanJoinEvent(player, getPlayers(), JoinType.PLUGIN);
 		getProcess().invokeAllListeners(canJoinEvent);
 		if (canJoinEvent.isCanceled()) {
@@ -118,6 +114,7 @@ public abstract class Session extends BaseComponent {
 		SessionManager.addRelation(player, this.getSession());
 		players.add(player);
 
+		Debug.send(this, "add player");
 		var joinEvent = new PlayerConstructorEvent(player, otherPlayers, getPlayers(), InvokeType.CHANGE);
 		getProcess().invokeAllListeners(joinEvent);
 	}
@@ -125,6 +122,7 @@ public abstract class Session extends BaseComponent {
 	@MustBeInvokedByOverriders
 	public final void removePlayer(Player player) throws PlayerQuitException {
 		PlayerNoInThisSession.check(this, player);
+		Debug.send(this, "try remove player");
 		var canPlayerQuit = new PlayerCanQuitEvent(player, getPlayers(), QuitType.PLUGIN_FORCE);
 		getProcess().invokeAllListeners(canPlayerQuit);
 		if (canPlayerQuit.isCanceled()) {
@@ -138,6 +136,7 @@ public abstract class Session extends BaseComponent {
 		SessionManager.removeRelation(player);
 		players.remove(player);
 
+		Debug.send(this, "remove player");
 		var quitEvent = new PlayerDestructorEvent(player, otherPlayers, getPlayers(), InvokeType.CHANGE);
 		getProcess().invokeAllListeners(quitEvent);
 	}

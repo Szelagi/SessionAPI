@@ -43,13 +43,10 @@ public abstract class Controller extends BaseComponent {
 		if (isEnable())
 			throw new MultiStartException(this);
 		setEnable(true);
+		Debug.send(this, "start");
 
 		remoteProcess = new RemoteProcess(this);
 		remoteProcess.registerListener(this);
-
-		Debug.send(this, "start");
-
-		Debug.send(this, "constructor");
 
 		invokeSelfComponentConstructor();
 		invokeSelfPlayerConstructors();
@@ -64,10 +61,8 @@ public abstract class Controller extends BaseComponent {
 		if (!isEnable())
 			throw new MultiStopException(this);
 		setEnable(false);
-
 		Debug.send(this, "stop");
 
-		Debug.send(this, "destructor");
 		invokeSelfPlayerDestructors();
 		invokeSelfComponentDestructor();
 

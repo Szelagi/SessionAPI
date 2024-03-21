@@ -51,13 +51,10 @@ public abstract class Board extends BaseComponent {
 			throw new StartException("board start used");
 		setEnable(true);
 		isUsed = true;
+		Debug.send(this, "start");
 
 		remoteProcess = new RemoteProcess(this);
 		remoteProcess.registerListener(this);
-
-		// start exception
-
-		Debug.send(this, "start");
 
 		space = SpaceAllocator.allocate(SessionWorldManager.getSessionWorld());
 		this.boardFileManager = new BoardFileManager(getName(), getSpace());
@@ -67,9 +64,6 @@ public abstract class Board extends BaseComponent {
 		} else {
 			this.signTagData = new SignTagData();
 		}
-
-		// initialize players
-		Debug.send(this, "constructor");
 
 		invokeSelfComponentConstructor();
 		invokeSelfPlayerConstructors();
@@ -90,14 +84,12 @@ public abstract class Board extends BaseComponent {
 		if (!isEnable())
 			throw new MultiStopException(this);
 		setEnable(false);
-
 		Debug.send(this, "stop");
 
-		remoteProcess.destroy();
-
-		Debug.send(this, "destructor");
 		invokeSelfPlayerDestructors();
 		invokeSelfComponentDestructor();
+
+		remoteProcess.destroy();
 
 		// degenerate
 		Debug.send(this, "degenerate");

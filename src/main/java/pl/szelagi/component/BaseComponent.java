@@ -18,6 +18,7 @@ import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
 import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
 import pl.szelagi.event.player.recovery.PlayerRecoveryEvent;
 import pl.szelagi.process.RemoteProcess;
+import pl.szelagi.util.Debug;
 import pl.szelagi.util.IncrementalGenerator;
 import pl.szelagi.util.PluginRegistry;
 
@@ -134,16 +135,26 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	}
 
 	@MustBeInvokedByOverriders
-	public void componentConstructor(ComponentConstructorEvent event) {}
+	public void componentConstructor(ComponentConstructorEvent event) {
+		Debug.send(this, "component constructor");
+	}
 
 	@MustBeInvokedByOverriders
-	public void componentDestructor(ComponentDestructorEvent event) {}
+	public void componentDestructor(ComponentDestructorEvent event) {
+		Debug.send(this, "component destructor");
+	}
 
 	@MustBeInvokedByOverriders
-	public void playerConstructor(PlayerConstructorEvent event) {}
+	public void playerConstructor(PlayerConstructorEvent event) {
+		Debug.send(this, "player constructor: " + event
+				.getPlayer().getName());
+	}
 
 	@MustBeInvokedByOverriders
-	public void playerDestructor(PlayerDestructorEvent event) {}
+	public void playerDestructor(PlayerDestructorEvent event) {
+		Debug.send(this, "player destructor: " + event
+				.getPlayer().getName());
+	}
 
 	@MustBeInvokedByOverriders
 	public void playerCanJoin(PlayerCanJoinEvent event) {}
