@@ -3,7 +3,9 @@ package pl.szelagi.component.board.filemanager;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.SessionAPI;
+import pl.szelagi.filemanager.Exists;
 import pl.szelagi.filemanager.IFileManager;
+import pl.szelagi.filemanager.Path;
 import pl.szelagi.filemanager.exception.BeyondHeadDirectoryException;
 import pl.szelagi.filemanager.exception.DirectoryNotFoundException;
 import pl.szelagi.filemanager.exception.InvalidConstructorException;
@@ -19,19 +21,30 @@ public class BoardFileManager implements ISchematicFileManager, ISignTagFileMana
 	private final String name;
 
 	public BoardFileManager(String name, ISpatial spatial) {
+		var fileManger = new IFileManager() {
+			@Override
+			public @NotNull File getCurrentDirectory() {
+				return SessionAPI.BOARD_DIRECTORY;
+			}
+
+			@Override
+			public @NotNull File getHeadDirectory() {
+				return SessionAPI.BOARD_DIRECTORY;
+			}
+		};
+
+		var fileManager = fileManger
+				.goDirectory(name, Exists.NOT_REQUIRE, Path.ONLY_FORWARD)
+				.asHeadDirectory();
+
 		if (name == null || spatial == null)
 			throw new InvalidConstructorException("name or spatial is null, initialize on bad function, only in #Board.generate()");
-		this.name = name;
-		this.spatial = spatial;
-		this.headDirectory = new File(getHeadDirectory(name));
-		this.currentDirectory = new File(headDirectory.getPath());
-	}
 
-	private BoardFileManager(String name, ISpatial spatial, File currentDirectory) {
+		headDirectory = fileManager.getHeadDirectory();
+		currentDirectory = fileManager.getCurrentDirectory();
+
 		this.name = name;
 		this.spatial = spatial;
-		this.headDirectory = new File(getHeadDirectory(name));
-		this.currentDirectory = currentDirectory;
 	}
 
 	private BoardFileManager(String name, ISpatial spatial, IFileManager fileManager) {
@@ -40,11 +53,7 @@ public class BoardFileManager implements ISchematicFileManager, ISignTagFileMana
 		this.headDirectory = fileManager.getHeadDirectory();
 		this.currentDirectory = fileManager.getCurrentDirectory();
 	}
-
-	private static String getHeadDirectory(String name) {
-		return BASE_DIRECTORY + "/" + name;
-	}
-
+	
 	@Override
 	public BoardFileManager getDirectory(String name) throws DirectoryNotFoundException {
 		return new BoardFileManager(name, spatial, ISchematicFileManager.super.getDirectory(name));
