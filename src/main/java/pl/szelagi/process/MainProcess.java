@@ -59,6 +59,7 @@ public class MainProcess extends Process {
 	public <T extends Controller> ArrayList<T> getControllers(@NotNull Class<T> clazz) {
 		return getRemoteProcesses().stream()
 		                           .filter(RemoteProcess::isController)
+		                           .map(RemoteProcess::getComponent)
 		                           .filter(clazz::isInstance)
 		                           .map(clazz::cast)
 		                           .collect(Collectors.toCollection(ArrayList::new));
@@ -68,6 +69,7 @@ public class MainProcess extends Process {
 	public <T extends Controller> T getFirstController(@NotNull Class<T> clazz) {
 		return getRemoteProcesses().stream()
 		                           .filter(RemoteProcess::isController)
+		                           .map(RemoteProcess::getComponent)
 		                           .filter(clazz::isInstance)
 		                           .map(clazz::cast)
 		                           .findFirst()
