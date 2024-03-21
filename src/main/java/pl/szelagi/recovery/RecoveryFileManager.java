@@ -9,14 +9,13 @@ import pl.szelagi.recovery.exception.RecoveryException;
 import java.io.*;
 
 public class RecoveryFileManager implements IFileManager {
-	private static final String BASE_DIRECTORY_NAME = SessionAPI.RECOVERY_DIRECTORY.getPath();
 	private static final String DATA_EXTENSION = ".dat";
 	private final File headDirectory;
 	private final File currentDirectory;
 
 	public RecoveryFileManager() {
-		this.headDirectory = new File(BASE_DIRECTORY_NAME);
-		this.currentDirectory = new File(BASE_DIRECTORY_NAME);
+		this.headDirectory = SessionAPI.RECOVERY_DIRECTORY;
+		this.currentDirectory = SessionAPI.RECOVERY_DIRECTORY;
 	}
 
 	@Override
@@ -42,7 +41,9 @@ public class RecoveryFileManager implements IFileManager {
 			objectOutputStream.flush();
 			objectOutputStream.close();
 		} catch (IOException e) {
-			throw new RecoveryException(e.getClass().getName() + ": " + e.getMessage());
+			throw new RecoveryException(e
+					                            .getClass()
+					                            .getName() + ": " + e.getMessage());
 		}
 	}
 
@@ -55,7 +56,8 @@ public class RecoveryFileManager implements IFileManager {
 			PlayerRecovery inventory = (PlayerRecovery) objectInputStream.readObject();
 			objectInputStream.close();
 			return inventory;
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (IOException |
+		         ClassNotFoundException e) {
 			throw new RecoveryException(e.getMessage());
 		}
 	}
