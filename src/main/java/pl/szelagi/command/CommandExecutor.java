@@ -16,6 +16,7 @@ import pl.szelagi.component.session.exception.SessionStartException;
 import pl.szelagi.manager.SessionManager;
 import pl.szelagi.spatial.ISpatial;
 import pl.szelagi.tag.SignTagAnalyzer;
+import pl.szelagi.util.Debug;
 
 import java.util.ArrayList;
 
@@ -206,6 +207,14 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 						SessionStartException e) {
 					player.sendMessage("§cSession start exception: §f" + e.getMessage());
 				}
+			}
+			case "show-debug" -> {
+				Debug.allowView(player);
+				player.sendMessage("§aOK");
+			}
+			case "hide-debug" -> {
+				Debug.denyView(player);
+				player.sendMessage("§aOK");
 			}
 		}
 		return true;

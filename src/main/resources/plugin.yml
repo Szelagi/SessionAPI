@@ -25,3 +25,7 @@ commands:
     description: "force join session"
   test-session:
     description: "start test session"
+  show-debug:
+    description: "show debug"
+  hide-debug:
+    description: "hide debug"

@@ -1,16 +1,26 @@
 package pl.szelagi.util;
 
-import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.session.Session;
 
+import java.util.HashSet;
+
 public class Debug {
+	private static final HashSet<Player> allowPlayers = new HashSet<>();
+
+	public static void allowView(Player player) {
+		allowPlayers.add(player);
+	}
+
+	public static void denyView(Player player) {
+		allowPlayers.remove(player);
+	}
+
 	public static void send(String message) {
-		for (var p : Bukkit.getServer().getOnlinePlayers()) {
-			if (!p.isOp())
-				continue;
+		for (var p : allowPlayers) {
 			p.sendMessage("§8D: §f" + message);
 		}
 	}
