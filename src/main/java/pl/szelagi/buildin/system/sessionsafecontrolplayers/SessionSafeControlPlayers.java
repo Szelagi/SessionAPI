@@ -36,7 +36,6 @@ public class SessionSafeControlPlayers extends Controller {
 		player.setFireTicks(0);
 		for (var potionType : NEGATIVE_POTION_TYPES)
 			player.removePotionEffect(potionType);
-		player.sendMessage("LOAD");
 		state.load(player);
 	}
 

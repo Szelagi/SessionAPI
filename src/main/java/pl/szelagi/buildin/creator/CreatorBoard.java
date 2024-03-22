@@ -59,7 +59,6 @@ public class CreatorBoard extends Board {
 	public void playerConstructor(PlayerConstructorEvent event) {
 		super.playerConstructor(event);
 		var player = event.getPlayer();
-		player.sendMessage("c");
 		player.setGameMode(GameMode.CREATIVE);
 	}
 }
