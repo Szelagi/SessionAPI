@@ -21,6 +21,7 @@ import pl.szelagi.component.session.exception.SessionStopException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerInSessionException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerIsNotAliveException;
 import pl.szelagi.component.session.exception.player.initialize.PlayerJoinException;
+import pl.szelagi.component.session.exception.player.initialize.RejectedPlayerException;
 import pl.szelagi.component.session.exception.player.uninitialize.PlayerNoInThisSession;
 import pl.szelagi.component.session.exception.player.uninitialize.PlayerQuitException;
 import pl.szelagi.event.component.ComponentConstructorEvent;
@@ -105,9 +106,7 @@ public abstract class Session extends BaseComponent {
 		getProcess().invokeAllListeners(canJoinEvent);
 		if (canJoinEvent.isCanceled()) {
 			assert canJoinEvent.getCancelCause() != null;
-			throw new PlayerJoinException(canJoinEvent
-					                              .getCancelCause()
-					                              .message());
+			throw new RejectedPlayerException(canJoinEvent.getCancelCause());
 		}
 		var otherPlayers = new ArrayList<>(getPlayers());
 
