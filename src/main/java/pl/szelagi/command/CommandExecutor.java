@@ -13,12 +13,11 @@ import pl.szelagi.buildin.system.testsession.TestSession;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.cause.NeutralCause;
 import pl.szelagi.component.session.exception.SessionStartException;
+import pl.szelagi.component.session.exception.player.initialize.RejectedPlayerException;
 import pl.szelagi.manager.SessionManager;
 import pl.szelagi.spatial.ISpatial;
 import pl.szelagi.tag.SignTagAnalyzer;
 import pl.szelagi.util.Debug;
-
-import java.util.ArrayList;
 
 public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 	private final JavaPlugin plugin;
@@ -154,7 +153,12 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 					player.sendMessage("§cPattern: /session-remove-player <player>");
 					return false;
 				}
-				session.addPlayer(addPlayer);
+				try {
+					session.addPlayer(addPlayer);
+				} catch (
+						RejectedPlayerException rejectedPlayerException) {
+					player.sendMessage(rejectedPlayerException.toString());
+				}
 				player.sendMessage("§aOK");
 				return true;
 			}
@@ -194,19 +198,16 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 					player.sendMessage("§cNot found session with pattern: '" + strings[0] + "'!");
 					return false;
 				}
-				session.addPlayer(player);
+				try {
+					session.addPlayer(player);
+				} catch (
+						RejectedPlayerException rejectedPlayerException) {
+					player.sendMessage(rejectedPlayerException.toString());
+				}
 			}
 			case "test-session" -> {
-				try {
-					var players = new ArrayList<Player>(plugin
-							                                    .getServer()
-							                                    .getOnlinePlayers());
-					new TestSession(plugin, players).start();
-					player.sendMessage("§aOK");
-				} catch (
-						SessionStartException e) {
-					player.sendMessage("§cSession start exception: §f" + e.getMessage());
-				}
+				new TestSession(plugin).start();
+				player.sendMessage("§aOK");
 			}
 			case "show-debug" -> {
 				Debug.allowView(player);
