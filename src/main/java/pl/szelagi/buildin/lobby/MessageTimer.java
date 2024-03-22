@@ -1,5 +1,8 @@
 package pl.szelagi.buildin.lobby;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.jetbrains.annotations.Nullable;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class MessageTimer extends Controller {
+	private static final Sound MESSAGE_SOUND = Sound.sound(Key.key("block.note_block.snare"), Sound.Source.AMBIENT, 1f, 1.8f);
 	private boolean isCounting = false;
 	private final Time waitTime;
 	private final ArrayList<ProcessTask> countDownTasks = new ArrayList<>();
@@ -76,6 +80,7 @@ public class MessageTimer extends Controller {
 		messages.add(() -> {
 			countDownTasks.add(getProcess().runControlledTaskLater(() -> {
 				broadcast(message);
+				broadcastSound(MESSAGE_SOUND);
 			}, Time.Seconds(waitSeconds - timeBefore.toSeconds())));
 		});
 	}
@@ -101,6 +106,12 @@ public class MessageTimer extends Controller {
 	private void broadcast(String message) {
 		for (var player : getSession().getPlayers())
 			player.sendMessage(message);
+	}
+
+	private void broadcastSound(Sound sound) {
+		for (var player : getSession().getPlayers())
+			Audience.audience(player)
+			        .playSound(sound);
 	}
 
 	private void countdown() {
