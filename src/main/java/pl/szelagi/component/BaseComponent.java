@@ -166,4 +166,9 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	public void playerDestructorRecovery(PlayerRecoveryEvent event) {}
 
 	public abstract @Nullable RemoteProcess getParentProcess();
+
+	@Override
+	public String toString() {
+		return "BaseComponent{" + "id=" + id + ", name='" + name + '\'' + '}';
+	}
 }
