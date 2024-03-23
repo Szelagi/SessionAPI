@@ -11,7 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import pl.szelagi.manager.BoardManager;
 import pl.szelagi.manager.ControllerManager;
 
-import java.util.ArrayList;
+import java.util.List;
 
 class EntityControllerListener implements Listener {
 	private final JavaPlugin plugin;
@@ -21,7 +21,8 @@ class EntityControllerListener implements Listener {
 	}
 
 	private void callEntityDeathEvent(EntityController controller, EntityDeathEvent event) {
-		controller.getEntityDeathEvent().call(c -> c.run(controller, event));
+		controller.getEntityDeathEvent()
+		          .call(c -> c.run(controller, event));
 	}
 
 	@EventHandler
@@ -34,9 +35,12 @@ class EntityControllerListener implements Listener {
 		var dungeon = BoardManager.getSession(entity);
 		if (dungeon == null)
 			return;
-		ArrayList<EntityController> controllers = ControllerManager.getControllers(dungeon, EntityController.class);
+		List<EntityController> controllers = ControllerManager.getControllers(dungeon, EntityController.class);
 		for (var controller : controllers) {
-			var storedEntity = controller.getEntities().stream().filter(e -> e.equals(entity)).findFirst().orElse(null);
+			var storedEntity = controller
+					.getEntities().stream()
+					.filter(e -> e.equals(entity))
+					.findFirst().orElse(null);
 			if (storedEntity == null)
 				continue;
 			controller.removeEntity(entity);
@@ -54,12 +58,17 @@ class EntityControllerListener implements Listener {
 		var dungeon = BoardManager.getSession(entity.getLocation());
 		if (dungeon == null)
 			return false;
-		ArrayList<EntityController> controllers = ControllerManager.getControllers(dungeon, EntityController.class);
+		List<EntityController> controllers = ControllerManager.getControllers(dungeon, EntityController.class);
 		for (var controller : controllers) {
-			var storedEntity = controller.getEntities().stream().filter(e -> e.equals(entity)).findFirst().orElse(null);
+			var storedEntity = controller
+					.getEntities().stream()
+					.filter(e -> e.equals(entity))
+					.findFirst().orElse(null);
 			if (storedEntity == null)
 				continue;
-			controller.getEntityDamageByEntityEvent().call(entityDamageByEntityEvent -> entityDamageByEntityEvent.run(controller, event, type));
+			controller
+					.getEntityDamageByEntityEvent()
+					.call(entityDamageByEntityEvent -> entityDamageByEntityEvent.run(controller, event, type));
 			isCall = true;
 		}
 		return isCall;
