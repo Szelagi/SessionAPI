@@ -87,7 +87,10 @@ public class NormalPlayerGrouper extends BaseGrouper {
 
 	@Override
 	public @Nullable BaseGroup getUnfairGroup() {
-		return null;
+		if (isFair() || groups.isEmpty())
+			return null;
+		return groups.stream().sorted()
+		             .findFirst().orElseThrow();
 	}
 
 	@Override
