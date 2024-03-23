@@ -1,5 +1,5 @@
 package pl.szelagi.buildin.grouper;
 
-public interface GroupMaker {
-	BaseGroup make(long id);
+public interface GroupMaker<T extends BaseGroup> {
+	T make(long id);
 }

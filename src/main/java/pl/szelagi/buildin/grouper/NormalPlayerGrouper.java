@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class NormalPlayerGrouper extends BaseGrouper {
-	private final ArrayList<BaseGroup> groups = new ArrayList<>();
+public class NormalPlayerGrouper<T extends BaseGroup> extends BaseGrouper<T> {
+	private final ArrayList<T> groups = new ArrayList<>();
 	private final int exceptedGroups;
-	private final GroupMaker maker;
+	private final GroupMaker<T> maker;
 
-	public NormalPlayerGrouper(ISessionComponent sessionComponent, int exceptedGroups, AllocatorType allocatorType, GroupMaker maker) {
+	public NormalPlayerGrouper(ISessionComponent sessionComponent, int exceptedGroups, GroupMaker<T> maker) {
 		super(sessionComponent);
 		this.exceptedGroups = exceptedGroups;
 		this.maker = maker;
@@ -55,7 +55,7 @@ public class NormalPlayerGrouper extends BaseGrouper {
 	}
 
 	@Override
-	public List<BaseGroup> getGroups() {
+	public List<T> getGroups() {
 		return groups;
 	}
 
@@ -86,7 +86,7 @@ public class NormalPlayerGrouper extends BaseGrouper {
 	}
 
 	@Override
-	public @Nullable BaseGroup getUnfairGroup() {
+	public @Nullable T getUnfairGroup() {
 		if (isFair() || groups.isEmpty())
 			return null;
 		return groups.stream().sorted()
@@ -94,7 +94,7 @@ public class NormalPlayerGrouper extends BaseGrouper {
 	}
 
 	@Override
-	public @Nullable BaseGroup getGroup(Player player) {
+	public @Nullable T getGroup(Player player) {
 		return groups.stream()
 		             .filter(baseGroup -> baseGroup.hasPlayer(player))
 		             .findFirst().orElse(null);
