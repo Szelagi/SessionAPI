@@ -9,16 +9,16 @@ import pl.szelagi.cancelable.CancelNotCancelableException;
 import pl.szelagi.cancelable.Cancelable;
 import pl.szelagi.event.BaseEvent;
 
-import java.util.Collection;
+import java.util.List;
 
 public abstract class PlayerCanChangeEvent extends BaseEvent implements Cancelable {
 	private final @NotNull Player player;
-	private final @NotNull Collection<Player> currentPlayers;
+	private final @NotNull List<Player> currentPlayers;
 	private final @NotNull CanCancelable cancelable;
 	private @Nullable CancelCause cancelCause;
 	private boolean isCanceled;
 
-	public PlayerCanChangeEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, @NotNull CanCancelable cancelable) {
+	public PlayerCanChangeEvent(@NotNull Player player, @NotNull List<Player> currentPlayers, @NotNull CanCancelable cancelable) {
 		this.player = player;
 		this.currentPlayers = currentPlayers;
 		this.cancelable = cancelable;
@@ -30,7 +30,7 @@ public abstract class PlayerCanChangeEvent extends BaseEvent implements Cancelab
 		return player;
 	}
 
-	public @NotNull Collection<Player> getCurrentPlayers() {
+	public @NotNull List<Player> getCurrentPlayers() {
 		return currentPlayers;
 	}
 

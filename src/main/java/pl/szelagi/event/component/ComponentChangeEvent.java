@@ -7,13 +7,14 @@ import pl.szelagi.component.BaseComponent;
 import pl.szelagi.event.BaseEvent;
 
 import java.util.Collection;
+import java.util.List;
 
 public abstract class ComponentChangeEvent extends BaseEvent {
 	private final @NotNull BaseComponent component;
 	private final @Nullable BaseComponent parentComponent;
-	private final @NotNull Collection<Player> currentPlayers;
+	private final @NotNull List<Player> currentPlayers;
 
-	public ComponentChangeEvent(@NotNull BaseComponent component, @NotNull Collection<Player> currentPlayers) {
+	public ComponentChangeEvent(@NotNull BaseComponent component, @NotNull List<Player> currentPlayers) {
 		this.component = component;
 		if (component.getParentProcess() != null) {
 			this.parentComponent = component

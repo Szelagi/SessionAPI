@@ -4,12 +4,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.event.player.canchange.type.JoinType;
 
-import java.util.Collection;
+import java.util.List;
 
 public class PlayerCanJoinEvent extends PlayerCanChangeEvent {
 	private final JoinType type;
 
-	public PlayerCanJoinEvent(@NotNull Player player, @NotNull Collection<Player> currentPlayers, JoinType type) {
+	public PlayerCanJoinEvent(@NotNull Player player, @NotNull List<Player> currentPlayers, JoinType type) {
 		super(player, currentPlayers, type);
 		this.type = type;
 	}

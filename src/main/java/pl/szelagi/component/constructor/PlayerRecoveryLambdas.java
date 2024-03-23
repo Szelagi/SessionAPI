@@ -1,6 +1,7 @@
 package pl.szelagi.component.constructor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerRecoveryLambdas<T> {
 	private final ArrayList<T> lambdas = new ArrayList<>();
@@ -10,7 +11,7 @@ public class PlayerRecoveryLambdas<T> {
 		return this;
 	}
 
-	public ArrayList<T> getLambdas() {
+	public List<T> getLambdas() {
 		return lambdas;
 	}
 
