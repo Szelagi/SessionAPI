@@ -61,7 +61,7 @@ public class Lobby extends Controller {
 	@Override
 	public void playerCanJoin(PlayerCanJoinEvent event) {
 		super.playerCanJoin(event);
-		if (maxSlots < event.getCurrentPlayers()
+		if (maxSlots > event.getCurrentPlayers()
 		                    .size())
 			return;
 		event.setCanceled(new CancelCause(this, "lobby is full"));
