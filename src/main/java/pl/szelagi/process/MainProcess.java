@@ -9,6 +9,7 @@ import pl.szelagi.process.exception.MultiDestroyException;
 import pl.szelagi.util.ReverseStream;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MainProcess extends Process {
@@ -56,7 +57,7 @@ public class MainProcess extends Process {
 	}
 
 	@NotNull
-	public <T extends Controller> ArrayList<T> getControllers(@NotNull Class<T> clazz) {
+	public <T extends Controller> List<T> getControllers(@NotNull Class<T> clazz) {
 		return getRemoteProcesses().stream()
 		                           .filter(RemoteProcess::isController)
 		                           .map(RemoteProcess::getComponent)

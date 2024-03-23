@@ -25,6 +25,7 @@ import pl.szelagi.util.PluginRegistry;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -96,7 +97,7 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 		           .runTask(getPlugin(), runnable);
 	}
 
-	private Collection<Player> getOtherPlayers(Player player, Collection<Player> allPlayers) {
+	private List<Player> getOtherPlayers(Player player, Collection<Player> allPlayers) {
 		return allPlayers.stream()
 		                 .filter(p -> !p.equals(player))
 		                 .collect(Collectors.toCollection(ArrayList::new));

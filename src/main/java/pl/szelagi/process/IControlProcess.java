@@ -7,7 +7,7 @@ import pl.szelagi.process.exception.MultiRegisterException;
 import pl.szelagi.process.exception.NotFoundUnregisterException;
 import pl.szelagi.util.timespigot.Time;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface IControlProcess {
 	void registerListener(EventListener listener) throws MultiRegisterException;
@@ -35,7 +35,7 @@ public interface IControlProcess {
 
 	void stopControlledTask(@NotNull ProcessTask processTask);
 
-	ArrayList<ProcessTask> getTasks();
+	List<ProcessTask> getTasks();
 
-	ArrayList<EventListener> getListeners();
+	List<EventListener> getListeners();
 }

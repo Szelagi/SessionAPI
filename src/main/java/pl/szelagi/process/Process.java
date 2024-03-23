@@ -6,6 +6,7 @@ import pl.szelagi.process.exception.MultiRegisterException;
 import pl.szelagi.process.exception.NotFoundUnregisterException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Process {
 	private boolean isDestroyed;
@@ -20,7 +21,7 @@ public abstract class Process {
 		return plugin;
 	}
 
-	public ArrayList<RemoteProcess> getRemoteProcesses() {
+	public List<RemoteProcess> getRemoteProcesses() {
 		return remoteProcesses;
 	}
 

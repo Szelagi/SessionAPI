@@ -40,6 +40,7 @@ import pl.szelagi.util.timespigot.Time;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Session extends BaseComponent {
 	protected final ArrayList<Player> players = new ArrayList<>();
@@ -148,7 +149,7 @@ public abstract class Session extends BaseComponent {
 		currentBoard.start();
 	}
 
-	public final @NotNull ArrayList<Player> getPlayers() {
+	public final @NotNull List<Player> getPlayers() {
 		return players;
 	}
 

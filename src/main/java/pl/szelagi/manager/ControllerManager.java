@@ -14,6 +14,7 @@ import pl.szelagi.component.session.Session;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ControllerManager {
 	private static final HashMap<String, Listener> CONTROLLER_LISTENER_MAP = new HashMap<>();
@@ -102,7 +103,7 @@ public class ControllerManager {
 
 	// Enable controller
 	@NotNull
-	public static <T extends Controller> ArrayList<T> getControllers(@Nullable Session session, @NotNull Class<T> clazz) {
+	public static <T extends Controller> List<T> getControllers(@Nullable Session session, @NotNull Class<T> clazz) {
 		if (session == null)
 			return new ArrayList<>();
 		return session.getMainProcess()

@@ -18,6 +18,7 @@ import pl.szelagi.util.ReverseStream;
 import pl.szelagi.util.timespigot.Time;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteProcess extends Process implements IControlProcess {
 	private final @NotNull MainProcess parentMainProcess;
@@ -143,12 +144,12 @@ public class RemoteProcess extends Process implements IControlProcess {
 		}
 	}
 
-	public ArrayList<ProcessTask> getTasks() {
+	public List<ProcessTask> getTasks() {
 		return tasks;
 	}
 
 	@Override
-	public ArrayList<EventListener> getListeners() {
+	public List<EventListener> getListeners() {
 		return listeners;
 	}
 
