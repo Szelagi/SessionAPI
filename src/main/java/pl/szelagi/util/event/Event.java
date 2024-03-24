@@ -3,19 +3,19 @@ package pl.szelagi.util.event;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class Event<T> {
-	@NotNull private final ArrayList<T> listeners = new ArrayList<>();
+	private final @NotNull ArrayList<Function<T, Void>> listeners = new ArrayList<>();
 
-	public void bind(@NotNull T t) {
-		this.listeners.add(t);
+	public void bind(@NotNull Function<T, Void> listener) {
+		this.listeners.add(listener);
 	}
 
-	public void call(@NotNull CallBuilder<T> callBuilder) {
-		ArrayList<T> cloneArrayListListeners = new ArrayList<>();
-		cloneArrayListListeners.addAll(listeners);
-		for (var l : cloneArrayListListeners) {
-			callBuilder.run(l);
+	public void call(@NotNull T event) {
+		var cloneArrayListListeners = new ArrayList<>(listeners);
+		for (var listener : cloneArrayListListeners) {
+			listener.apply(event);
 		}
 	}
 }
