@@ -1,0 +1,49 @@
+package pl.szelagi.state;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import pl.szelagi.state.manual.ManualContainerException;
+
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+public class Container<I, S> implements Serializable, Iterable<S> {
+	private final ManualContainer<I, S> manualContainer;
+	private final @NotNull Function<I, S> creator;
+
+	public Container(@NotNull Function<I, S> creator) {
+		this.manualContainer = new ManualContainer<>();
+		this.creator = creator;
+	}
+
+	public @NotNull S get(I input) throws ManualContainerException {
+		if (manualContainer.isExists(input))
+			return manualContainer.get(input);
+		return manualContainer.create(input, creator);
+	}
+
+	public void clearState(I input) throws ManualContainerException {
+		if (manualContainer.isExists(input))
+			manualContainer.remove(input);
+	}
+
+	public @Nullable S find(Predicate<S> predicate) {
+		return manualContainer.find(predicate);
+	}
+
+	public @NotNull S create(@NotNull I input, @NotNull Function<I, S> creator) throws ManualContainerException {
+		return manualContainer.create(input, creator);
+	}
+
+	public @NotNull Function<I, S> getCreator() {
+		return creator;
+	}
+
+	@NotNull
+	@Override
+	public Iterator<S> iterator() {
+		return manualContainer.iterator();
+	}
+}
