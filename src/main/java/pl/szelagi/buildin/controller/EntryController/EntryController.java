@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.event.component.ComponentConstructorEvent;
-import pl.szelagi.util.event.Event;
+import pl.szelagi.util.event.MultiParamEvent;
 import pl.szelagi.util.timespigot.Time;
 
 public class EntryController extends Controller {
@@ -14,7 +14,7 @@ public class EntryController extends Controller {
 	private final boolean isAutoDisable;
 	private final long refreshTicks;
 	@NotNull
-	private final Event<PlayerEntryEvent> playerEntryEventEvent = new Event<>();
+	private final MultiParamEvent<PlayerEntryEvent> playerEntryEventEvent = new MultiParamEvent<>();
 
 	public EntryController(ISessionComponent component, Location location, double radius) {
 		this(component, location, Time.Ticks(1), radius, true);
@@ -42,7 +42,7 @@ public class EntryController extends Controller {
 		}, Time.Ticks(0), Time.Ticks((int) refreshTicks));
 	}
 
-	public @NotNull Event<PlayerEntryEvent> getPlayerEntryEventEvent() {
+	public @NotNull MultiParamEvent<PlayerEntryEvent> getPlayerEntryEventEvent() {
 		return playerEntryEventEvent;
 	}
 }

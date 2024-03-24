@@ -13,7 +13,7 @@ import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.event.player.canchange.PlayerCanJoinEvent;
 import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
 import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
-import pl.szelagi.util.event.Event;
+import pl.szelagi.util.event.MultiParamEvent;
 import pl.szelagi.util.timespigot.Time;
 
 public class Lobby extends Controller {
@@ -23,7 +23,7 @@ public class Lobby extends Controller {
 	private final int maxSlots;
 	private final int minSlots;
 	private final Time waitTime;
-	private final Event<Runnable> finalizeEvent = new Event<>();
+	private final MultiParamEvent<Runnable> finalizeEvent = new MultiParamEvent<>();
 	private MessageTimer messageTimer;
 
 	public Lobby(ISessionComponent sessionComponent, Time waitTime, Location lobby, int maxSlots, int minSlots) {
@@ -117,7 +117,7 @@ public class Lobby extends Controller {
 		return messageTimer.isCounting();
 	}
 
-	public Event<Runnable> getFinalizeEvent() {
+	public MultiParamEvent<Runnable> getFinalizeEvent() {
 		return messageTimer.getFinalizeEvent();
 	}
 

@@ -14,7 +14,7 @@ import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.event.component.ComponentDestructorEvent;
-import pl.szelagi.util.event.Event;
+import pl.szelagi.util.event.MultiParamEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,13 +24,13 @@ public class EntityController extends Controller {
 	private final ArrayList<LivingEntity> entities;
 	// events
 	@NotNull
-	private final Event<EntityDeathEvent> entityDeathEvent = new Event<>();
+	private final MultiParamEvent<EntityDeathEvent> entityDeathEvent = new MultiParamEvent<>();
 	@NotNull
-	private final Event<EntitiesClearEvent> entitiesClearEvent = new Event<>();
+	private final MultiParamEvent<EntitiesClearEvent> entitiesClearEvent = new MultiParamEvent<>();
 	@NotNull
-	private final Event<ForceStopEvent> forceStopEventEvent = new Event<>();
+	private final MultiParamEvent<ForceStopEvent> forceStopEventEvent = new MultiParamEvent<>();
 	@NotNull
-	private final Event<EntityDamageByEntityEvent> entityDamageByEntityEvent = new Event<>();
+	private final MultiParamEvent<EntityDamageByEntityEvent> entityDamageByEntityEvent = new MultiParamEvent<>();
 
 	public EntityController(ISessionComponent component, @NotNull EntityBuild... builds) {
 		super(component);
@@ -38,19 +38,19 @@ public class EntityController extends Controller {
 		this.entities = new ArrayList<>();
 	}
 
-	public @NotNull Event<EntityDeathEvent> getEntityDeathEvent() {
+	public @NotNull MultiParamEvent<EntityDeathEvent> getEntityDeathEvent() {
 		return entityDeathEvent;
 	}
 
-	public @NotNull Event<EntitiesClearEvent> getEntitiesClearEvent() {
+	public @NotNull MultiParamEvent<EntitiesClearEvent> getEntitiesClearEvent() {
 		return entitiesClearEvent;
 	}
 
-	public @NotNull Event<ForceStopEvent> getForceStopEventEvent() {
+	public @NotNull MultiParamEvent<ForceStopEvent> getForceStopEventEvent() {
 		return forceStopEventEvent;
 	}
 
-	public @NotNull Event<EntityDamageByEntityEvent> getEntityDamageByEntityEvent() {
+	public @NotNull MultiParamEvent<EntityDamageByEntityEvent> getEntityDamageByEntityEvent() {
 		return entityDamageByEntityEvent;
 	}
 
