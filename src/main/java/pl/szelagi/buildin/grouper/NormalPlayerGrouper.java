@@ -1,24 +1,27 @@
 package pl.szelagi.buildin.grouper;
 
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
+import pl.szelagi.buildin.grouper.event.PlayerAddEvent;
+import pl.szelagi.buildin.grouper.event.PlayerRemoveEvent;
+import pl.szelagi.buildin.grouper.event.PlayerSwitchEvent;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.event.player.initialize.InvokeType;
 import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
-public class NormalPlayerGrouper<T extends BaseGroup> extends BaseGrouper<T> {
-	private final ArrayList<T> groups = new ArrayList<>();
+public class NormalPlayerGrouper extends Grouper {
+	private final ArrayList<Group> groups = new ArrayList<>();
 	private final int exceptedGroups;
-	private final GroupMaker<T> maker;
+	private final Function<NormalPlayerGrouper, Group> groupMaker;
 
-	public NormalPlayerGrouper(ISessionComponent sessionComponent, int exceptedGroups, GroupMaker<T> maker) {
-		super(sessionComponent);
+	public NormalPlayerGrouper(ISessionComponent component, int exceptedGroups, Function<NormalPlayerGrouper, Group> groupMaker) {
+		super(component);
 		this.exceptedGroups = exceptedGroups;
-		this.maker = maker;
+		this.groupMaker = groupMaker;
 	}
 
 	@Override
@@ -26,77 +29,63 @@ public class NormalPlayerGrouper<T extends BaseGroup> extends BaseGrouper<T> {
 		super.playerConstructor(event);
 		if (event.getInvokeType() == InvokeType.CHANGE)
 			return;
-		if (groups.size() < exceptedGroups) {
-			var group = maker.make(groups.size());
-			group.add(event.getPlayer());
-			groups.add(group);
-			return;
+
+		if (getGroupCount() < exceptedGroups) {
+			addPlayerToNewGroup(event.getPlayer());
+		} else {
+			addPlayerToSmallestGroup(event.getPlayer());
 		}
-		BaseGroup group = groups.stream().sorted()
-		                        .findFirst()
-		                        .orElseThrow();
-		group.add(event.getPlayer());
+	}
+
+	private void addPlayerToNewGroup(Player player) {
+		var group = groupMaker.apply(this);
+		groups.add(group);
+		addPlayer(player, group);
+	}
+
+	private void addPlayerToSmallestGroup(Player player) {
+		var group = groups.stream().sorted()
+		                  .findFirst()
+		                  .orElseThrow();
+		addPlayer(player, group);
 	}
 
 	@Override
-	public List<Player> getAllPlayers() {
-		return groups.stream()
-		             .map(BaseGroup::getPlayers)
-		             .flatMap(List::stream)
-		             .collect(Collectors.toList());
-	}
-
-	@Override
-	public List<Player> getAllInSessionPlayers() {
-		return groups.stream()
-		             .map(BaseGroup::getInSessionPlayers)
-		             .flatMap(List::stream)
-		             .collect(Collectors.toList());
-	}
-
-	@Override
-	public List<T> getGroups() {
+	public @NotNull List<Group> getGroups() {
 		return groups;
 	}
 
 	@Override
-	public int getGroupCount() {
-		return groups.size();
+	public boolean switchPlayer(Player player, Group group) {
+		var playerGroup = getGroup(player);
+		if (!groups.contains(group))
+			return false;
+		if (playerGroup == null)
+			return false;
+		playerGroup.remove(player);
+		group.add(player);
+		getPlayerSwitchEvent().call(new PlayerSwitchEvent(player, this, playerGroup, group));
+		return true;
 	}
 
 	@Override
-	public boolean isFair() {
-		if (groups.isEmpty())
-			return true;
-		var firstSize = groups.get(0).count();
-		return groups.stream()
-		             .allMatch(baseGroup -> baseGroup.count() == firstSize);
+	public boolean addPlayer(Player player, Group group) {
+		if (hasPlayer(player))
+			return false;
+		if (!groups.contains(group))
+			return false;
+		group.add(player);
+		getPlayerAddEvent().call(new PlayerAddEvent(player, this, group));
+		return true;
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return groups.stream()
-		             .anyMatch(baseGroup -> baseGroup.count() > 0);
-	}
-
-	@Override
-	public boolean hasPlayer(Player player) {
-		return groups.stream()
-		             .anyMatch(baseGroup -> baseGroup.hasPlayer(player));
-	}
-
-	@Override
-	public @Nullable T getUnfairGroup() {
-		if (isFair() || groups.isEmpty())
-			return null;
-		return groups.stream().sorted()
-		             .findFirst().orElseThrow();
-	}
-
-	@Override
-	public @Nullable T getGroup(Player player) {
-		return groups.stream()
-		             .filter(baseGroup -> baseGroup.hasPlayer(player))
-		             .findFirst().orElse(null);
+	public boolean removePlayer(Player player) {
+		var playerGroup = getGroup(player);
+		if (playerGroup == null)
+			return false;
+		playerGroup.add(player);
+		getPlayerRemoveEvent().call(new PlayerRemoveEvent(player, this, playerGroup));
+		return true;
 	}
 }
