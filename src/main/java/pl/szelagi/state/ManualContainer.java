@@ -7,8 +7,10 @@ import pl.szelagi.state.manual.ManualContainerException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class ManualContainer<I, S> implements Serializable, Iterable<S> {
 	private final HashMap<I, S> inputStorageMap = new HashMap<>();
@@ -39,6 +41,12 @@ public class ManualContainer<I, S> implements Serializable, Iterable<S> {
 		                      .filter(predicate)
 		                      .findFirst()
 		                      .orElse(null);
+	}
+
+	public <R> @NotNull List<R> map(Function<? super S, ? extends R> mapper) {
+		return inputStorageMap.values().stream()
+		                      .map(mapper)
+		                      .collect(Collectors.toList());
 	}
 
 	public boolean isExists(@NotNull I input) {
