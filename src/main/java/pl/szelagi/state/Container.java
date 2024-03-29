@@ -6,6 +6,7 @@ import pl.szelagi.state.manual.ManualContainerException;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -31,6 +32,10 @@ public class Container<I, S> implements Serializable, Iterable<S> {
 
 	public @Nullable S find(Predicate<S> predicate) {
 		return manualContainer.find(predicate);
+	}
+
+	public <R> @NotNull List<R> map(Function<? super S, ? extends R> mapper) {
+		return manualContainer.map(mapper);
 	}
 
 	public @NotNull S create(@NotNull I input, @NotNull Function<I, S> creator) throws ManualContainerException {
