@@ -11,17 +11,14 @@ import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class NormalPlayerGrouper extends Grouper {
 	private final ArrayList<Group> groups = new ArrayList<>();
 	private final int exceptedGroups;
-	private final Function<NormalPlayerGrouper, Group> groupMaker;
 
-	public NormalPlayerGrouper(ISessionComponent component, int exceptedGroups, Function<NormalPlayerGrouper, Group> groupMaker) {
+	public NormalPlayerGrouper(ISessionComponent component, int exceptedGroups) {
 		super(component);
 		this.exceptedGroups = exceptedGroups;
-		this.groupMaker = groupMaker;
 	}
 
 	@Override
@@ -38,7 +35,7 @@ public class NormalPlayerGrouper extends Grouper {
 	}
 
 	private void addPlayerToNewGroup(Player player) {
-		var group = groupMaker.apply(this);
+		var group = new Group(this);
 		groups.add(group);
 		addPlayer(player, group);
 	}
@@ -88,4 +85,10 @@ public class NormalPlayerGrouper extends Grouper {
 		getPlayerRemoveEvent().call(new PlayerRemoveEvent(player, this, playerGroup));
 		return true;
 	}
+
+	@Override
+	public boolean isComplete() {
+		return getGroupCount() >= exceptedGroups;
+	}
 }
+

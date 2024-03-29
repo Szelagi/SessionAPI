@@ -35,6 +35,8 @@ public interface IGrouper extends Iterable<Group> {
 
 	boolean isFair();
 
+	boolean isComplete();
+
 	boolean isEmpty();
 
 	long nextGroupId();
