@@ -6,16 +6,25 @@ import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Event<T> {
-	private final @NotNull ArrayList<Function<T, Void>> listeners = new ArrayList<>();
+	private final @NotNull ArrayList<Function<T, ?>> listeners = new ArrayList<>();
+	private final @NotNull ArrayList<Runnable> runnableListeners = new ArrayList<>();
 
-	public void bind(@NotNull Function<T, Void> listener) {
-		this.listeners.add(listener);
+	public void bind(@NotNull Function<T, ?> listener) {
+		listeners.add(listener);
 	}
 
-	public void call(@NotNull T event) {
+	public void bind(@NotNull Runnable listener) {
+		runnableListeners.add(listener);
+	}
+
+	public void call(T event) {
 		var cloneArrayListListeners = new ArrayList<>(listeners);
 		for (var listener : cloneArrayListListeners) {
 			listener.apply(event);
+		}
+		var cloneRunnable = new ArrayList<>(runnableListeners);
+		for (var listener : cloneRunnable) {
+			listener.run();
 		}
 	}
 }
