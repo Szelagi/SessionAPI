@@ -9,7 +9,7 @@ import pl.szelagi.component.controller.Controller;
 import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.event.component.ComponentDestructorEvent;
 import pl.szelagi.process.ProcessTask;
-import pl.szelagi.util.event.MultiParamEvent;
+import pl.szelagi.util.event.Event;
 import pl.szelagi.util.timespigot.Time;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class MessageTimer extends Controller {
 	private @Nullable String startCountMessage = null;
 	private @Nullable String breakCountMessage = null;
 	private ProcessTask mainTask = null;
-	private final MultiParamEvent<Runnable> finalizeEvent = new MultiParamEvent<>();
+	private final Event<Void> finalizeEvent = new Event<>();
 	private final HashSet<Integer> busySeconds = new HashSet<>();
 
 	public MessageTimer(ISessionComponent sessionComponent, Time waitTime) {
@@ -91,7 +91,7 @@ public class MessageTimer extends Controller {
 		registerMessage(timeBefore, message);
 	}
 
-	public MultiParamEvent<Runnable> getFinalizeEvent() {
+	public Event<Void> getFinalizeEvent() {
 		return finalizeEvent;
 	}
 
@@ -117,7 +117,7 @@ public class MessageTimer extends Controller {
 	private void countdown() {
 		isCounting = false;
 		clearData();
-		finalizeEvent.call(Runnable::run);
+		finalizeEvent.call(null);
 		stop();
 	}
 }
