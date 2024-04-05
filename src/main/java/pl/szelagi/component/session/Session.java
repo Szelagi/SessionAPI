@@ -65,14 +65,13 @@ public abstract class Session extends BaseComponent {
 		remoteProcess = new RemoteProcess(mainProcess);
 		remoteProcess.registerListener(this);
 
-		currentBoard = getDefaultStartBoard();
-
 		invokeSelfComponentConstructor();
 		invokeSelfPlayerConstructors();
 
 		var event = new SessionStartEvent(this);
 		callBukkitEvent(event);
 
+		currentBoard = getDefaultStartBoard();
 		currentBoard.start();
 	}
 
@@ -85,6 +84,8 @@ public abstract class Session extends BaseComponent {
 
 		var playersArrayCopy = new ArrayList<>(players);
 		playersArrayCopy.forEach(this::removePlayer);
+
+		getCurrentBoard().stop();
 
 		invokeSelfPlayerDestructors();
 		invokeSelfComponentDestructor();
