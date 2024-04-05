@@ -48,3 +48,7 @@ interference.
 2. Include the downloaded plugin as a library in your Java project.
 3. Set `depend: [SessionAPI]` in the `plugin.yml` file.
 4. Copy the downloaded plugin to the server's plugin folder `/plugins`.
+
+## Tutorial
+
+* [TUTORIAL](TUTORIAL.md)
