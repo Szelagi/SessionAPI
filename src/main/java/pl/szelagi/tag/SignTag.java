@@ -9,7 +9,8 @@ import java.io.Serializable;
 
 public class SignTag implements Serializable {
 	@NotNull private final String tag;
-	@NotNull private final RelativeLocation relativeLocation;
+	@NotNull
+	private final RelativeLocation relativeLocation;
 	@NotNull private final BlockFace blockFace;
 	@NotNull private final String[] args;
 

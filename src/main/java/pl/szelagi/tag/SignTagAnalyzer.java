@@ -1,7 +1,11 @@
 package pl.szelagi.tag;
 
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +33,7 @@ public class SignTagAnalyzer {
 		String name;
 		String[] args;
 		SignTag element;
-		var blocks = spatial.getBlocksInArea();
+		var blocks = spatial.getBlocksIn();
 		for (var b : blocks) {
 			if (!SIGN_MATERIALS.contains(b.getType()))
 				continue;
@@ -41,10 +45,26 @@ public class SignTagAnalyzer {
 				name = mainLine.replace(prefix, "");
 				args = getArgs(signSide.getLines());
 				var relativeLocation = new RelativeLocation(b.getLocation(), spatial.getCenter());
+
+				BlockFace blockFace = BlockFace.EAST;
+				if (b.getType() == Material.OAK_WALL_SIGN) {
+					BlockData blockData = b.getBlockData();
+					if (blockData instanceof Directional) {
+						Directional directional = (Directional) blockData;
+						blockFace = directional.getFacing();
+					}
+				} else if (b.getType() == Material.OAK_SIGN) {
+					BlockData blockData = b.getBlockData();
+					if (blockData instanceof Rotatable) {
+						Rotatable rotatable = (Rotatable) blockData;
+						blockFace = rotatable.getRotation();
+					}
+				}
 				//var directional = (Directional) b.getBlockData();
-				org.bukkit.block.data.type.Sign signBlock = (org.bukkit.block.data.type.Sign) b.getBlockData();
-				var rotation = signBlock.getRotation();
-				element = new SignTag(name, relativeLocation, rotation, args);
+				//org.bukkit.block.data.type.Sign signBlock = (org.bukkit.block.data.type.Sign) b.getBlockData();
+				//var rotation = signBlock.getRotation();
+				//var rotation = BlockFace.EAST;
+				element = new SignTag(name, relativeLocation, blockFace, args);
 				data.add(element);
 			}
 		}
