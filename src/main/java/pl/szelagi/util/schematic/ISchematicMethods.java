@@ -18,7 +18,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import pl.szelagi.spatial.ISpatial;
 
 import java.io.File;
@@ -28,14 +27,16 @@ import java.io.FileOutputStream;
 public interface ISchematicMethods {
 	private static void showSchematicError(String error) {
 		String errorMessage = "§4[SCHEMATIC ERROR] §f" + error;
-		for (Player player : Bukkit.getServer().getOnlinePlayers())
+		for (Player player : Bukkit.getServer()
+		                           .getOnlinePlayers())
 			if (player.isOp())
 				player.sendMessage(errorMessage);
-		Bukkit.getServer().getConsoleSender().sendMessage(errorMessage);
+		Bukkit.getServer().getConsoleSender()
+		      .sendMessage(errorMessage);
 	}
 
-	static ISpatial toSchematicSpatial(@NotNull String filePath, @NotNull ISpatial spatial) {
-		return toSchematicSpatialCore(filePath, spatial.getCenterBlockLocation());
+	static ISpatial toSchematicSpatial(@NotNull String filePath, @NotNull Location base) {
+		return toSchematicSpatialCore(filePath, base);
 	}
 
 	static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
@@ -57,7 +58,8 @@ public interface ISchematicMethods {
 	static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull Location location) throws SchematicException {
 		try {
 			loadAndPlaceSchematicCore(filePath, location);
-		} catch (SchematicException schematicException) {
+		} catch (
+				SchematicException schematicException) {
 			showSchematicError("load: filePath: " + filePath + " Exception: " + schematicException.getMessage());
 			throw schematicException;
 		}
@@ -66,7 +68,8 @@ public interface ISchematicMethods {
 	static void copyAndSaveSchematic(@NotNull String filePath, @NotNull Location location1, @NotNull Location location2, @NotNull Location locationCenter) {
 		try {
 			copyAndSaveSchematicCore(filePath, location1, location2, locationCenter);
-		} catch (SchematicException schematicException) {
+		} catch (
+				SchematicException schematicException) {
 			showSchematicError("save: filePath: " + filePath + " Exception: " + schematicException.getMessage());
 			throw schematicException;
 		}
@@ -85,8 +88,13 @@ public interface ISchematicMethods {
 			assert format != null;
 			reader = format.getReader(fis);
 			clipboard = reader.read();
-			try (EditSession editSession = WorldEdit.getInstance().newEditSession(adaptedWorld)) {
-				Operation operation = new ClipboardHolder(clipboard).createPaste(editSession).copyEntities(false).copyBiomes(false).to(to)
+			try (EditSession editSession = WorldEdit
+					.getInstance()
+					.newEditSession(adaptedWorld)) {
+				Operation operation = new ClipboardHolder(clipboard)
+						.createPaste(editSession)
+						.copyEntities(false)
+						.copyBiomes(true).to(to)
 						// configure here
 						.build();
 				Operations.complete(operation);
@@ -97,35 +105,40 @@ public interface ISchematicMethods {
 			throw new SchematicException(e.getMessage());
 		}
 	}
-
-	@Nullable
-	private static ISpatial toSchematicSpatialCore(@NotNull String filePath, @NotNull Location toLocation) throws SchematicException {
+	
+	private static @NotNull ISpatial toSchematicSpatialCore(@NotNull String filePath, @NotNull Location base) throws SchematicException {
 		File file = new File(filePath);
-		Clipboard clipboard;
-		World adaptedWorld = BukkitAdapter.adapt(toLocation.getWorld());
-		var adaptedTo = BukkitAdapter.asBlockVector(toLocation);
-
 		ClipboardFormat format = ClipboardFormats.findByFile(file);
-		assert format != null;
-		try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+		Clipboard clipboard;
+		FileInputStream fis;
+		ClipboardReader reader;
+		try {
+			fis = new FileInputStream(file);
+			assert format != null;
+			reader = format.getReader(fis);
 			clipboard = reader.read();
 
-			var region = new CuboidRegion(adaptedWorld, clipboard.getMinimumPoint(), clipboard.getMinimumPoint());
-			BlockArrayClipboard n_clipboard = new BlockArrayClipboard(region);
-			n_clipboard.setOrigin(adaptedTo);
+			var min = clipboard.getMinimumPoint();
+			var max = clipboard.getMaximumPoint();
+			var origin = clipboard.getOrigin();
 
-			var min = BukkitAdapter.adapt(toLocation.getWorld(), region.getMinimumPoint());
-			var max = BukkitAdapter.adapt(toLocation.getWorld(), region.getMaximumPoint());
+			var deltaMin = min.subtract(origin);
+			var deltaMax = max.subtract(origin);
+			var baseVector3 = BukkitAdapter.asBlockVector(base);
+
+			var world = base.getWorld();
+			var firstPoint = BukkitAdapter.adapt(world, deltaMin.add(baseVector3));
+			var secondPoint = BukkitAdapter.adapt(world, deltaMax.add(baseVector3));
 
 			return new ISpatial() {
 				@Override
 				public @NotNull Location getFirstPoint() {
-					return min;
+					return firstPoint;
 				}
 
 				@Override
 				public @NotNull Location getSecondPoint() {
-					return max;
+					return secondPoint;
 				}
 			};
 		} catch (Exception e) {
@@ -156,7 +169,7 @@ public interface ISchematicMethods {
 
 		var forwardExtentCopy = new ForwardExtentCopy(world, region, clipboard, region.getMinimumPoint());
 
-		forwardExtentCopy.setCopyingBiomes(false);
+		forwardExtentCopy.setCopyingBiomes(true);
 		forwardExtentCopy.setCopyingEntities(false);
 		forwardExtentCopy.setRemovingEntities(true);
 

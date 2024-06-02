@@ -1,5 +1,7 @@
 package pl.szelagi.component.board.filemanager;
 
+import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
 import pl.szelagi.filemanager.IFileManager;
 import pl.szelagi.spatial.ISpatial;
 import pl.szelagi.util.schematic.ISchematicMethods;
@@ -18,13 +20,18 @@ public interface ISchematicFileManager extends IFileManager, ISchematicMethods, 
 	default void saveSchematic(String name, ISpatial optimized) throws SchematicException {
 		var path = getCurrentDirectory().getPath() + "/" + name + SCHEMATIC_EXTENSION;
 		tryMakeHeadDirectory();
-		ISchematicMethods.copyAndSaveSchematic(path, optimized, this.getCenter());
+		ISchematicMethods.copyAndSaveSchematic(path, optimized, optimized.getCenter());
 	}
 
 	default void saveEmptySchematic(String name, ISpatial optimized) throws SchematicException {
 		var path = getCurrentDirectory().getPath() + "/" + name + SCHEMATIC_EXTENSION;
 		tryMakeHeadDirectory();
-		ISchematicMethods.emptySaveSchematic(path, optimized, this.getCenter());
+		ISchematicMethods.emptySaveSchematic(path, optimized, optimized.getCenter());
+	}
+
+	default @NotNull ISpatial toSpatial(@NotNull String name, @NotNull Location base) throws SchematicException {
+		var path = getCurrentDirectory().getPath() + "/" + name + SCHEMATIC_EXTENSION;
+		return ISchematicMethods.toSchematicSpatial(path, base);
 	}
 
 	default boolean existsSchematic(String name) {
