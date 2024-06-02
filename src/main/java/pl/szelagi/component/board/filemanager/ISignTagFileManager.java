@@ -2,23 +2,23 @@ package pl.szelagi.component.board.filemanager;
 
 import pl.szelagi.filemanager.IFileManager;
 import pl.szelagi.spatial.ISpatial;
-import pl.szelagi.tag.SignTagData;
+import pl.szelagi.tag.TagResolve;
 import pl.szelagi.tag.exception.SignTagException;
-import pl.szelagi.tag.serialization.SignTagDataStorage;
+import pl.szelagi.tag.serialization.TagResolveStorage;
 
 import java.io.*;
 
 public interface ISignTagFileManager extends IFileManager, ISpatial {
 	String SIGN_TAG_DATA_EXTENSION = ".dat";
 
-	default void saveSignTagData(String name, SignTagData signTagData) throws SignTagException {
+	default void saveSignTagData(String name, TagResolve tagResolve) throws SignTagException {
 		var filePath = getCurrentDirectory().getPath() + "/" + name + SIGN_TAG_DATA_EXTENSION;
 		var file = new File(filePath);
 		try {
 			file.createNewFile();
 			FileOutputStream fileOutputStream = new FileOutputStream(file, false);
 			ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-			objectOutputStream.writeObject(signTagData.toSignTagDataStorage());
+			objectOutputStream.writeObject(tagResolve.toSignTagDataStorage());
 			objectOutputStream.flush();
 			objectOutputStream.close();
 		} catch (IOException e) {
@@ -26,18 +26,19 @@ public interface ISignTagFileManager extends IFileManager, ISpatial {
 		}
 	}
 
-	default SignTagData loadSignTagData(String name) throws SignTagException {
+	default TagResolve loadSignTagData(String name) throws SignTagException {
 		var filePath = getCurrentDirectory().getPath() + "/" + name + SIGN_TAG_DATA_EXTENSION;
 		var file = new File(filePath);
 		try {
 			FileInputStream fileInputStream = new FileInputStream(file);
 			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-			SignTagDataStorage signTagDataStorage = (SignTagDataStorage) objectInputStream.readObject();
+			TagResolveStorage tagResolveStorage = (TagResolveStorage) objectInputStream.readObject();
 			objectInputStream.close();
-			return signTagDataStorage.toSignTagData(getCenter());
+			return tagResolveStorage.toTagResolve(getCenter());
 		} catch (FileNotFoundException e) {
 			throw new SignTagException(e.getMessage());
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (IOException |
+		         ClassNotFoundException e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}

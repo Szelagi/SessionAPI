@@ -17,7 +17,7 @@ import pl.szelagi.component.session.cause.NeutralCause;
 import pl.szelagi.component.session.exception.SessionStartException;
 import pl.szelagi.component.session.exception.player.initialize.RejectedPlayerException;
 import pl.szelagi.manager.SessionManager;
-import pl.szelagi.tag.SignTagAnalyzer;
+import pl.szelagi.tag.TagAnalyzer;
 import pl.szelagi.util.Debug;
 
 public class CommandExecutor implements org.bukkit.command.CommandExecutor {
@@ -76,7 +76,7 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 				creatorBoard.getStorage()
 				            .saveEmptySchematic(Board.SCHEMATIC_DESTRUCTOR_NAME, optimized);
 
-				var data = SignTagAnalyzer.process(optimized);
+				var data = TagAnalyzer.process(optimized);
 				creatorBoard.getStorage()
 				            .saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
 

@@ -7,7 +7,6 @@ import org.bukkit.WeatherType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
-import pl.szelagi.SessionAPI;
 import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
 import pl.szelagi.buildin.system.boardwatchdog.BoardWatchDogController;
 import pl.szelagi.component.BaseComponent;
@@ -24,7 +23,7 @@ import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
 import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.space.Space;
 import pl.szelagi.space.SpaceAllocator;
-import pl.szelagi.tag.SignTagData;
+import pl.szelagi.tag.TagResolve;
 import pl.szelagi.util.Debug;
 import pl.szelagi.world.SessionWorldManager;
 
@@ -37,7 +36,7 @@ public abstract class Board extends BaseComponent {
 	private boolean isUsed;
 	private Space space;
 	private BoardFileManager boardFileManager;
-	private SignTagData signTagData;
+	private TagResolve tagResolve;
 
 	public Board(Session session) {
 		this.session = session;
@@ -61,9 +60,9 @@ public abstract class Board extends BaseComponent {
 		this.boardFileManager = new BoardFileManager(getName(), getSpace());
 
 		if (boardFileManager.existsSignTagData(SIGN_TAG_DATA_NAME)) {
-			this.signTagData = boardFileManager.loadSignTagData(SIGN_TAG_DATA_NAME);
+			this.tagResolve = boardFileManager.loadSignTagData(SIGN_TAG_DATA_NAME);
 		} else {
-			this.signTagData = new SignTagData();
+			this.tagResolve = new TagResolve();
 		}
 
 		Debug.send(this, "generate");
@@ -110,18 +109,18 @@ public abstract class Board extends BaseComponent {
 		getSpace().getCenter().getBlock()
 		          .setType(Material.BEDROCK);
 		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME)) {
-			var spatial = boardFileManager.toSpatial(SCHEMATIC_DESTRUCTOR_NAME, getBase());
+			var secureZone = boardFileManager.toSpatial(SCHEMATIC_DESTRUCTOR_NAME, getBase());
 		}
 		if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
 			boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
 		}
-		if (signTagData != null) {
-			for (var l : signTagData.toLocations())
+		if (tagResolve != null) {
+			for (var l : tagResolve.toLocations())
 				l.getBlock()
 				 .setType(Material.AIR);
 		}
 
-		SessionAPI.debug("" + spatial.size());
+		//SessionAPI.debug("" + spatial.size());
 	}
 
 	protected void degenerate() {
@@ -144,8 +143,8 @@ public abstract class Board extends BaseComponent {
 		return session;
 	}
 
-	public final @NotNull SignTagData getSignTagData() {
-		return signTagData;
+	public final @NotNull TagResolve getSignTagData() {
+		return tagResolve;
 	}
 
 	public final @NotNull RemoteProcess getProcess() {
