@@ -10,12 +10,13 @@ import pl.szelagi.SessionAPI;
 import pl.szelagi.buildin.creator.Creator;
 import pl.szelagi.buildin.creator.CreatorBoard;
 import pl.szelagi.buildin.system.testsession.TestSession;
+import pl.szelagi.buildin.testzone.first.MyContainer;
+import pl.szelagi.buildin.testzone.mobarena.MobGame;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.cause.NeutralCause;
 import pl.szelagi.component.session.exception.SessionStartException;
 import pl.szelagi.component.session.exception.player.initialize.RejectedPlayerException;
 import pl.szelagi.manager.SessionManager;
-import pl.szelagi.spatial.ISpatial;
 import pl.szelagi.tag.SignTagAnalyzer;
 import pl.szelagi.util.Debug;
 
@@ -66,20 +67,21 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 				player.sendMessage("§7§oSaving...");
 				long millis = System.currentTimeMillis();
 
-				ISpatial optimized = creatorBoard
+				var optimized = creatorBoard
 						.getStorage()
-						.toOptimizedSpatial();
+						.toOptimized();
 
 				creatorBoard.getStorage()
 				            .saveSchematic(Board.SCHEMATIC_CONSTRUCTOR_NAME, optimized);
 				creatorBoard.getStorage()
 				            .saveEmptySchematic(Board.SCHEMATIC_DESTRUCTOR_NAME, optimized);
 
-				var data = SignTagAnalyzer.process(creatorBoard.getSpace());
+				var data = SignTagAnalyzer.process(optimized);
 				creatorBoard.getStorage()
 				            .saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
 
 				long deltaMillis = System.currentTimeMillis() - millis;
+				player.sendMessage("§6[Spatial] §7Size: §f" + optimized.size() + "§7, size-x: §f" + optimized.sizeX() + "§7, size-y: §f" + optimized.sizeY() + "§7, size-z: §f" + optimized.sizeZ() + "§7!");
 				player.sendMessage("§aSaved §f(" + deltaMillis + "ms)");
 			}
 			case "board-edit" -> {
@@ -216,6 +218,16 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 			case "hide-debug" -> {
 				Debug.denyView(player);
 				player.sendMessage("§aOK");
+			}
+			case "tetest" -> {
+				var a = new MyContainer(plugin);
+				a.start();
+				a.addPlayer(player);
+			}
+			case "mobgame" -> {
+				var a = new MobGame(plugin);
+				a.start();
+				a.addPlayer(player);
 			}
 		}
 		return true;

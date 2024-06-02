@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import pl.szelagi.spatial.ISpatial;
 
 public class Space implements ISpatial {
-	public static final int SPACE_SIZE = 150;//200
+	public static final int SPACE_SIZE = 300; // recommended 300x300
 	public static final int AREA_SIZE = 10;
 	public static final int TOTAL_SIZE = 2 * AREA_SIZE + SPACE_SIZE;
 	private final Location startPoint;

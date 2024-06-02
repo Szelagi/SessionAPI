@@ -1,6 +1,7 @@
 package pl.szelagi;
 
 import org.bukkit.Bukkit;
+import org.bukkit.permissions.ServerOperator;
 import org.bukkit.plugin.java.JavaPlugin;
 import pl.szelagi.command.CommandExecutor;
 import pl.szelagi.command.ConstructTabCompleter;
@@ -13,7 +14,10 @@ import pl.szelagi.world.SessionWorldManager;
 import java.io.File;
 
 public final class SessionAPI extends JavaPlugin {
-	public static final File SESSION_API_DIRECTORY = new File(Bukkit.getServer().getPluginsFolder().getPath() + "/SessionAPI");
+	public static final File SESSION_API_DIRECTORY = new File(Bukkit
+			                                                          .getServer()
+			                                                          .getPluginsFolder()
+			                                                          .getPath() + "/SessionAPI");
 	public static final File RECOVERY_DIRECTORY = new File(SESSION_API_DIRECTORY.getPath() + "/recovery");
 	public static final File BOARD_DIRECTORY = new File(SESSION_API_DIRECTORY.getPath() + "/board");
 	private static SessionAPI instance;
@@ -47,5 +51,11 @@ public final class SessionAPI extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		// Plugin shutdown logic
+	}
+
+	public static void debug(String message) {
+		Bukkit.getOnlinePlayers().stream()
+		      .filter(ServerOperator::isOp)
+		      .forEach(player -> player.sendMessage(message));
 	}
 }

@@ -36,7 +36,8 @@ public class BoardManager {
 			}
 		}
 
-		plugin.getServer().getPluginManager().registerEvents(new MyListener(), plugin);
+		plugin.getServer().getPluginManager()
+		      .registerEvents(new MyListener(), plugin);
 	}
 
 	@Nullable
@@ -56,7 +57,9 @@ public class BoardManager {
 	}
 
 	@Nullable
-	public static Session getSession(Block block) {
+	public static Session getSession(@Nullable Block block) {
+		if (block == null)
+			return null;
 		return getSession(block.getLocation());
 	}
 }

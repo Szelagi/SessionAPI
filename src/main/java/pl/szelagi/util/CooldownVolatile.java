@@ -8,7 +8,7 @@ import pl.szelagi.util.timespigot.TimeUnit;
 import java.util.HashMap;
 
 public class CooldownVolatile {
-	private static final int OPTIMIZE_TIMER_TICKS = 60 * 20;
+	private static final int OPTIMIZE_TIMER_TICKS = 60 * 20 * 2;
 	private static JavaPlugin plugin;
 	private static HashMap<Player, HashMap<String, Long>> map = new HashMap<>();
 

@@ -7,6 +7,7 @@ import org.bukkit.WeatherType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import pl.szelagi.SessionAPI;
 import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
 import pl.szelagi.buildin.system.boardwatchdog.BoardWatchDogController;
 import pl.szelagi.component.BaseComponent;
@@ -65,11 +66,12 @@ public abstract class Board extends BaseComponent {
 			this.signTagData = new SignTagData();
 		}
 
+		Debug.send(this, "generate");
+		//syncBukkitTask(this::generate);
+		generate();
+
 		invokeSelfComponentConstructor();
 		invokeSelfPlayerConstructors();
-
-		Debug.send(this, "generate");
-		syncBukkitTask(this::generate);
 
 		// BoardStartEvent
 		var event = new BoardStartEvent(this);
@@ -107,6 +109,9 @@ public abstract class Board extends BaseComponent {
 	protected void generate() {
 		getSpace().getCenter().getBlock()
 		          .setType(Material.BEDROCK);
+		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME)) {
+			var spatial = boardFileManager.toSpatial(SCHEMATIC_DESTRUCTOR_NAME, getBase());
+		}
 		if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
 			boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
 		}
@@ -115,6 +120,8 @@ public abstract class Board extends BaseComponent {
 				l.getBlock()
 				 .setType(Material.AIR);
 		}
+
+		SessionAPI.debug("" + spatial.size());
 	}
 
 	protected void degenerate() {
