@@ -1,41 +1,19 @@
 package pl.szelagi.spatial;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3i;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SpatialOptimizer implements ISpatial {
-	private final static ArrayList<Material> AIR_MATERIALS = new ArrayList<>(Arrays.asList(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR, Material.LAVA, Material.WATER));
 	private Location first;
 	private Location second;
 
 	public SpatialOptimizer(Location first, Location second) {
 		this.first = first;
 		this.second = second;
-	}
-
-	public SpatialOptimizer optimize() {
-		AxiSetter<Integer> xSetter = (location, value) -> location.setX(value.doubleValue());
-		AxiSetter<Integer> ySetter = (location, value) -> location.setY(value.doubleValue());
-		AxiSetter<Integer> zSetter = (location, value) -> location.setZ(value.doubleValue());
-		AxiGetter<Integer> xGetter = Location::getBlockX;
-		AxiGetter<Integer> yGetter = Location::getBlockY;
-		AxiGetter<Integer> zGetter = Location::getBlockZ;
-
-		// optimize for first point
-		optimizeT(xSetter, xGetter, first);
-		optimizeT(ySetter, yGetter, first);
-		optimizeT(zSetter, zGetter, first);
-
-		// optimize for second point
-		optimizeT(xSetter, xGetter, second);
-		optimizeT(ySetter, yGetter, second);
-		optimizeT(zSetter, zGetter, second);
-
-		return this;
 	}
 
 	@Override
@@ -48,57 +26,57 @@ public class SpatialOptimizer implements ISpatial {
 		return second;
 	}
 
-	private boolean isAnyBlock(Location loc1, Location loc2) {
-		for (var b : getBlocksInArea(loc1, loc2)) {
-			if (!AIR_MATERIALS.contains(b.getType()))
-				return true;
-		}
-		return false;
-	}
+	public SpatialOptimizer optimize() {
+		var a = getFirstPoint();
+		var b = getSecondPoint();
+		var minX = (int) Math.min(a.getX(), b.getX());
+		var minY = (int) Math.min(a.getY(), b.getY());
+		var minZ = (int) Math.min(a.getZ(), b.getZ());
+		var maxX = (int) Math.max(a.getX(), b.getX());
+		var maxY = (int) Math.max(a.getY(), b.getY());
+		var maxZ = (int) Math.max(a.getZ(), b.getZ());
 
-	private Location getAnotherPoint(Location firstOrSecondPoint) {
-		if (getFirstPoint().equals(firstOrSecondPoint))
-			return getSecondPoint();
-		return getFirstPoint();
-	}
+		var min = new Vector3i(maxX, maxY, maxZ);
+		var max = new Vector3i(minX, minY, minZ);
 
-	private boolean isSecondPoint(Location point) {
-		return getSecondPoint().equals(point);
-	}
+		AtomicInteger noAirCount = new AtomicInteger();
 
-	private boolean isFirstPoint(Location point) {
-		return getFirstPoint().equals(point);
-	}
+		eachBlocks(block -> {
+			var material = block.getType();
+			var x = block.getX();
+			var y = block.getY();
+			var z = block.getZ();
+			if (ISpatial.isAirMaterial(material))
+				return;
+			noAirCount.getAndIncrement();
+			// x
+			if (x < min.x)
+				min.x = x;
+			else if (x > max.x)
+				max.x = x;
+			// y
+			if (y < min.y)
+				min.y = y;
+			else if (y > max.y)
+				max.y = y;
+			// z
+			if (z < min.z)
+				min.z = z;
+			else if (z > max.z)
+				max.z = z;
+		});
 
-	private void optimizeT(AxiSetter<Integer> setter, AxiGetter<Integer> getter, final Location operative) {
-		final Location opposite = getAnotherPoint(operative);
-		final int direction = axiDirection(operative, opposite, getter);
+		World world = getCenter().getWorld();
 
-		Location operativeDynamic = operative.clone();
-		Location oppositeDynamic = opposite.clone();
-
-		for (int i = 0; i < axiDistance(operative, opposite, getter); i++) {
-			setter.set(oppositeDynamic, getter.get(operative)); // set stable to same line
-			if (isAnyBlock(operativeDynamic, oppositeDynamic))
-				break;
-			setter.set(operativeDynamic, getter.get(operativeDynamic) + direction); // move operative
-		}
-
-		if (isFirstPoint(operative)) {
-			this.first = operativeDynamic;
+		if (noAirCount.get() >= 2) {
+			this.first = new Location(world, min.x, min.y, min.z);
+			this.second = new Location(world, max.x, max.y, max.z);
 		} else {
-			this.second = operativeDynamic;
+			var tempCenter = getCenter();
+			this.first = tempCenter;
+			this.second = tempCenter;
 		}
-	}
 
-	private int axiDirection(Location operative, Location stable, AxiGetter<Integer> axiGetter) {
-		int compared = axiGetter.get(stable) - axiGetter.get(operative);
-		if (compared == 0)
-			return 0;
-		return compared / Math.abs(compared);
-	}
-
-	private int axiDistance(Location loc1, Location loc2, AxiGetter<Integer> getter) {
-		return Math.abs(getter.get(loc2) - getter.get(loc1));
+		return this;
 	}
 }
