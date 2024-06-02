@@ -117,3 +117,5 @@ test/
 
 # META-INF and MANIFEST.MF
 src/main/resources/META-INF/
+/src/main/java/pl/szelagi/buildin/testzone
+/src/main/java/pl/szelagi/buildin/testzone
