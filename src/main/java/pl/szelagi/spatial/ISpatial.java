@@ -1,16 +1,26 @@
 package pl.szelagi.spatial;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public interface ISpatial {
+	ArrayList<Material> AIR_MATERIALS = new ArrayList<>(Arrays.asList(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR, Material.LAVA, Material.WATER));
+
+	static boolean isAirMaterial(Material material) {
+		return AIR_MATERIALS.contains(material);
+	}
+
 	private static double average(double... numbers) {
 		double sum = 0;
 		for (var num : numbers)
@@ -25,35 +35,47 @@ public interface ISpatial {
 	}
 
 	private static boolean isSameWorld(Location location1, Location location2) {
-		return location1.getWorld().getName().equals(location2.getWorld().getName());
+		return location1.getWorld().getName()
+		                .equals(location2
+				                        .getWorld()
+				                        .getName());
 	}
 
 	@NotNull Location getFirstPoint();
 
 	@NotNull Location getSecondPoint();
 
-	default ArrayList<Block> getBlocksInArea(Location loc1, Location loc2) {
-		int lowX = Math.min(loc1.getBlockX(), loc2.getBlockX());
-		int lowY = Math.min(loc1.getBlockY(), loc2.getBlockY());
-		int lowZ = Math.min(loc1.getBlockZ(), loc2.getBlockZ());
-
-		ArrayList<Block> locs = new ArrayList<>();
-		Block currentBlock;
-
-		for (int x = 0; x <= Math.abs(loc1.getBlockX() - loc2.getBlockX()); x++) {
-			for (int y = 0; y <= Math.abs(loc1.getBlockY() - loc2.getBlockY()); y++) {
-				for (int z = 0; z <= Math.abs(loc1.getBlockZ() - loc2.getBlockZ()); z++) {
-					currentBlock = new Location(loc1.getWorld(), lowX + x, lowY + y, lowZ + z).getBlock();
-					locs.add(currentBlock);
-				}
-			}
-		}
-		return locs;
+	@NotNull
+	default List<Block> getBlocksIn() {
+		return getBlocksIn(getFirstPoint(), getSecondPoint());
 	}
 
-	@NotNull
-	default ArrayList<Block> getBlocksInArea() {
-		return getBlocksInArea(getFirstPoint(), getSecondPoint());
+	default void eachBlocks(Consumer<Block> predicate) {
+		eachBlocks(getFirstPoint(), getSecondPoint(), predicate);
+	}
+
+	static List<Block> getBlocksIn(Location loc1, Location loc2) {
+		var list = new ArrayList<Block>();
+		eachBlocks(loc1, loc2, list::add);
+		return list;
+	}
+
+	static void eachBlocks(Location loc1, Location loc2, Consumer<Block> predicate) {
+		int minX = Math.min(loc1.getBlockX(), loc2.getBlockX());
+		int minY = Math.min(loc1.getBlockY(), loc2.getBlockY());
+		int minZ = Math.min(loc1.getBlockZ(), loc2.getBlockZ());
+		int maxX = Math.max(loc1.getBlockX(), loc2.getBlockX());
+		int maxY = Math.max(loc1.getBlockY(), loc2.getBlockY());
+		int maxZ = Math.max(loc1.getBlockZ(), loc2.getBlockZ());
+		Block block;
+
+		for (int x = minX; x <= maxX; x++)
+			for (int y = minY; y <= maxY; y++)
+				for (int z = minZ; z <= maxZ; z++) {
+					block = loc1.getWorld()
+					            .getBlockAt(x, y, z);
+					predicate.accept(block);
+				}
 	}
 
 	default boolean isLocationIn(Location location) {
@@ -87,7 +109,7 @@ public interface ISpatial {
 		return (a + b) / 2;
 	}
 
-	default ISpatial toOptimizedSpatial() {
+	default ISpatial toOptimized() {
 		return new SpatialOptimizer(getFirstPoint(), getSecondPoint()).optimize();
 	}
 
@@ -134,7 +156,11 @@ public interface ISpatial {
 
 	default @NotNull Collection<Entity> getEntitiesIn() {
 		var radius = getRadiusCircumscribed();
-		return getCenterBlockLocation().getNearbyEntities(radius.getX(), radius.getY(), radius.getZ()).stream().filter(entity -> isLocationIn(entity.getLocation())).collect(Collectors.toCollection(ArrayList::new));
+		return getCenterBlockLocation()
+				.getNearbyEntities(radius.getX(), radius.getY(), radius.getZ())
+				.stream()
+				.filter(entity -> isLocationIn(entity.getLocation()))
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	default @NotNull Collection<Entity> getMobsIn() {
