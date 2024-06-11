@@ -4,11 +4,13 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import pl.szelagi.buildin.controller.NoCreatureDropController.NoCreatureDropController;
-import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
+import pl.szelagi.buildin.controller.OtherEquipment.OtherEquipment;
+import pl.szelagi.buildin.controller.OtherGameMode.OtherGameMode;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.board.filemanager.BoardFileManager;
 import pl.szelagi.component.session.Session;
 import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
+import pl.szelagi.spatial.ISpatial;
 
 public class CreatorBoard extends Board {
 	private final String editName;
@@ -25,19 +27,18 @@ public class CreatorBoard extends Board {
 
 	@Override
 	protected void generate() {
-		for (var b : getSpace().getBlocksInArea())
-			b.setType(Material.AIR);
 		this.storage = new BoardFileManager(editName, getSpace());
 		getBase().getBlock()
 		         .setType(Material.BEDROCK);
 		if (storage.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME))
 			storage.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
+		setSecureZone(ISpatial.clone(getSpace()));
 	}
 
 	@Override
 	protected void degenerate() {
-		for (var b : getSpace().getBlocksInArea())
-			b.setType(Material.AIR);
+		getSpace().toOptimized()
+		          .eachBlocks(block -> block.setType(Material.AIR));
 		for (var entity : getSpace().getMobsIn())
 			entity.remove();
 	}
@@ -51,14 +52,13 @@ public class CreatorBoard extends Board {
 	@Override
 	public void start() {
 		super.start();
-		new NoNaturalSpawnController(this).start();
 		new NoCreatureDropController(this).start();
+		new OtherEquipment(this, true).start();
+		new OtherGameMode(this, GameMode.CREATIVE).start();
 	}
 
 	@Override
 	public void playerConstructor(PlayerConstructorEvent event) {
 		super.playerConstructor(event);
-		var player = event.getPlayer();
-		player.setGameMode(GameMode.CREATIVE);
 	}
 }
