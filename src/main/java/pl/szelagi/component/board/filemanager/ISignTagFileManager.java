@@ -9,7 +9,7 @@ import pl.szelagi.tag.serialization.TagResolveStorage;
 import java.io.*;
 
 public interface ISignTagFileManager extends IFileManager, ISpatial {
-	String SIGN_TAG_DATA_EXTENSION = ".dat";
+	String SIGN_TAG_DATA_EXTENSION = ".bin";
 
 	default void saveSignTagData(String name, TagResolve tagResolve) throws SignTagException {
 		var filePath = getCurrentDirectory().getPath() + "/" + name + SIGN_TAG_DATA_EXTENSION;

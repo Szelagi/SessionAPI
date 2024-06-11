@@ -7,7 +7,7 @@ import org.bukkit.WeatherType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
-import pl.szelagi.buildin.controller.NoNatrualSpawnController.NoNaturalSpawnController;
+import pl.szelagi.buildin.system.SecureZone;
 import pl.szelagi.buildin.system.boardwatchdog.BoardWatchDogController;
 import pl.szelagi.component.BaseComponent;
 import pl.szelagi.component.baseexception.StartException;
@@ -16,13 +16,17 @@ import pl.szelagi.component.baseexception.multi.MultiStartException;
 import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.event.BoardStartEvent;
 import pl.szelagi.component.board.event.BoardStopEvent;
+import pl.szelagi.component.board.exception.BoardStartException;
 import pl.szelagi.component.board.filemanager.BoardFileManager;
 import pl.szelagi.component.session.Session;
+import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
 import pl.szelagi.event.player.initialize.PlayerDestructorEvent;
 import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.space.Space;
 import pl.szelagi.space.SpaceAllocator;
+import pl.szelagi.spatial.ISpatial;
+import pl.szelagi.tag.TagQuery;
 import pl.szelagi.tag.TagResolve;
 import pl.szelagi.util.Debug;
 import pl.szelagi.world.SessionWorldManager;
@@ -30,13 +34,14 @@ import pl.szelagi.world.SessionWorldManager;
 public abstract class Board extends BaseComponent {
 	public final static String SCHEMATIC_CONSTRUCTOR_NAME = "constructor";
 	public final static String SCHEMATIC_DESTRUCTOR_NAME = "destructor";
-	public final static String SIGN_TAG_DATA_NAME = "signtagdata";
+	public final static String SIGN_TAG_DATA_NAME = "tag";
 	private final Session session;
 	private RemoteProcess remoteProcess;
 	private boolean isUsed;
 	private Space space;
 	private BoardFileManager boardFileManager;
 	private TagResolve tagResolve;
+	private ISpatial secureZone;
 
 	public Board(Session session) {
 		this.session = session;
@@ -49,6 +54,8 @@ public abstract class Board extends BaseComponent {
 			throw new MultiStartException(this);
 		if (isUsed)
 			throw new StartException("board start used");
+		startValid();
+
 		setEnable(true);
 		isUsed = true;
 		Debug.send(this, "start");
@@ -69,15 +76,19 @@ public abstract class Board extends BaseComponent {
 		//syncBukkitTask(this::generate);
 		generate();
 
+		secureZoneValid();
+
 		invokeSelfComponentConstructor();
 		invokeSelfPlayerConstructors();
 
 		// BoardStartEvent
 		var event = new BoardStartEvent(this);
 		callBukkitEvent(event);
+	}
 
+	private void startBoardSystemControllers(ComponentConstructorEvent event) {
 		new BoardWatchDogController(this).start();
-		new NoNaturalSpawnController(this).start();
+		new SecureZone(this).start();
 	}
 
 	@MustBeInvokedByOverriders
@@ -109,7 +120,7 @@ public abstract class Board extends BaseComponent {
 		getSpace().getCenter().getBlock()
 		          .setType(Material.BEDROCK);
 		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME)) {
-			var secureZone = boardFileManager.toSpatial(SCHEMATIC_DESTRUCTOR_NAME, getBase());
+			secureZone = boardFileManager.toSpatial(SCHEMATIC_DESTRUCTOR_NAME, getBase());
 		}
 		if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
 			boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
@@ -119,8 +130,6 @@ public abstract class Board extends BaseComponent {
 				l.getBlock()
 				 .setType(Material.AIR);
 		}
-
-		//SessionAPI.debug("" + spatial.size());
 	}
 
 	protected void degenerate() {
@@ -143,11 +152,15 @@ public abstract class Board extends BaseComponent {
 		return session;
 	}
 
-	public final @NotNull TagResolve getSignTagData() {
+	public final @NotNull TagResolve getTagResolve() {
 		return tagResolve;
 	}
 
-	public final @NotNull RemoteProcess getProcess() {
+	public final @NotNull TagQuery tagQuery(@NotNull String tagName) {
+		return tagResolve.query(tagName);
+	}
+
+	public final RemoteProcess getProcess() {
 		return remoteProcess;
 	}
 
@@ -164,7 +177,7 @@ public abstract class Board extends BaseComponent {
 	}
 
 	@Override
-	public final @NotNull RemoteProcess getParentProcess() {
+	public final RemoteProcess getParentProcess() {
 		return session.getProcess();
 	}
 
@@ -195,5 +208,18 @@ public abstract class Board extends BaseComponent {
 		var player = event.getPlayer();
 		player.resetPlayerWeather();
 		player.resetPlayerTime();
+	}
+
+	private void secureZoneValid() throws BoardStartException {
+		if (secureZone == null)
+			throw new BoardStartException("Method Board.generate() did not define SecureZone");
+	}
+
+	protected void setSecureZone(ISpatial spatial) {
+		secureZone = spatial;
+	}
+
+	public ISpatial getSecureZone() {
+		return secureZone;
 	}
 }
