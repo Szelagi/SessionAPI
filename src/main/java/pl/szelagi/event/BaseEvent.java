@@ -17,8 +17,10 @@ public abstract class BaseEvent {
 			var methods = ReflectionRecursive.getEventMethods(listener.getClass(), this.getClass());
 			if (methods.isEmpty())
 				return false;
-			for (var method : methods)
+			for (var method : methods) {
+				method.setAccessible(true);
 				method.invoke(listener, this);
+			}
 			return true;
 		} catch (IllegalAccessException |
 		         InvocationTargetException e) {

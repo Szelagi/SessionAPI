@@ -53,7 +53,7 @@ public class ReflectionRecursive {
 		Class<?> currentClass = classType;
 		do {
 			Arrays
-					.stream(currentClass.getMethods())
+					.stream(currentClass.getDeclaredMethods())
 					.filter(m -> m.getReturnType()
 					              .equals(void.class))
 					.filter(m -> m.getParameterCount() == 1)
