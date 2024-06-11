@@ -14,11 +14,27 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public interface ISpatial {
+public interface ISpatial extends Cloneable {
 	ArrayList<Material> AIR_MATERIALS = new ArrayList<>(Arrays.asList(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR, Material.LAVA, Material.WATER));
 
 	static boolean isAirMaterial(Material material) {
 		return AIR_MATERIALS.contains(material);
+	}
+
+	static ISpatial clone(ISpatial spatial) {
+		return new ISpatial() {
+			@Override
+			public @NotNull Location getFirstPoint() {
+				return spatial.getFirstPoint()
+				              .clone();
+			}
+
+			@Override
+			public @NotNull Location getSecondPoint() {
+				return spatial.getSecondPoint()
+				              .clone();
+			}
+		};
 	}
 
 	private static double average(double... numbers) {
@@ -81,14 +97,21 @@ public interface ISpatial {
 	default boolean isLocationIn(Location location) {
 		var l1 = this.getFirstPoint();
 		var l2 = this.getSecondPoint();
+		boolean isXZ = isLocationInXZ(location);
+		boolean isZ = isBetween(location.getBlockZ(), l1.getBlockZ(), l2.getBlockZ());
+		return isXZ && isZ;
+	}
+
+	default boolean isLocationInXZ(Location location) {
+		var l1 = this.getFirstPoint();
+		var l2 = this.getSecondPoint();
 		if (!isSameWorld(l1, l2))
 			return false;
 		if (!isSameWorld(location, l1))
 			return false;
 		boolean isX = isBetween(location.getBlockX(), l1.getBlockX(), l2.getBlockX());
-		boolean isY = isBetween(location.getBlockY(), l1.getBlockY(), l2.getBlockY());
 		boolean isZ = isBetween(location.getBlockZ(), l1.getBlockZ(), l2.getBlockZ());
-		return isX && isY && isZ;
+		return isX && isZ;
 	}
 
 	default Location getCenter() {
