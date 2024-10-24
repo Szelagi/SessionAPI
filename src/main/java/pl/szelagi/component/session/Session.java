@@ -6,12 +6,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pl.szelagi.buildin.controller.HideOtherPlayers;
+import pl.szelagi.buildin.system.loading.LoadingBoard;
 import pl.szelagi.buildin.system.recovery.RecoveryPlayerController;
 import pl.szelagi.buildin.system.sessionsafecontrolplayers.SessionSafeControlPlayers;
 import pl.szelagi.buildin.system.sessionwatchdog.SessionWatchDogController;
 import pl.szelagi.component.BaseComponent;
-import pl.szelagi.component.baseexception.multi.MultiStartException;
-import pl.szelagi.component.baseexception.multi.MultiStopException;
+import pl.szelagi.component.ComponentStatus;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.cause.StopCause;
 import pl.szelagi.component.session.event.SessionStartEvent;
@@ -38,7 +39,6 @@ import pl.szelagi.process.RemoteProcess;
 import pl.szelagi.util.Debug;
 import pl.szelagi.util.timespigot.Time;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,9 +57,10 @@ public abstract class Session extends BaseComponent {
 
 	@MustBeInvokedByOverriders
 	public void start() throws SessionStartException, PlayerJoinException {
-		if (isEnable())
-			throw new MultiStartException(this);
-		setEnable(true);
+		validateStartable();
+		validateNotStartedBefore();
+		setStatus(ComponentStatus.RUNNING);
+
 		Debug.send(this, "start");
 
 		remoteProcess = new RemoteProcess(mainProcess);
@@ -71,15 +72,16 @@ public abstract class Session extends BaseComponent {
 		var event = new SessionStartEvent(this);
 		callBukkitEvent(event);
 
-		currentBoard = getDefaultStartBoard();
-		currentBoard.start();
+		currentBoard = new LoadingBoard(this);
+		currentBoard.syncStart();
+
+		setBoard(getDefaultStartBoard());
 	}
 
 	@MustBeInvokedByOverriders
 	public void stop(StopCause cause) throws SessionStopException {
-		if (!isEnable())
-			throw new MultiStopException(this);
-		setEnable(false);
+		validateDisableable();
+		setStatus(ComponentStatus.SHUTDOWN);
 		Debug.send(this, "stop");
 
 		var playersArrayCopy = new ArrayList<>(players);
@@ -143,11 +145,12 @@ public abstract class Session extends BaseComponent {
 	}
 
 	@MustBeInvokedByOverriders
-	protected final void setBoard(Board board) {
+	public final void setBoard(Board board) {
 		//if (board.isUsed()) throw new BoardIsUsedException(); add to #Board.start()
-		currentBoard.stop();
-		currentBoard = board;
-		currentBoard.start();
+		board.start(true, () -> {
+			currentBoard.stop();
+			currentBoard = board;
+		});
 	}
 
 	public final @NotNull List<Player> getPlayers() {
@@ -158,7 +161,7 @@ public abstract class Session extends BaseComponent {
 		return players.size();
 	}
 
-	public final @NotNull RemoteProcess getProcess() {
+	public final RemoteProcess getProcess() {
 		return remoteProcess;
 	}
 
@@ -189,14 +192,15 @@ public abstract class Session extends BaseComponent {
 		recoveryPlayerController.save();
 	}
 
-	public final void systemSessionConstructor(ComponentConstructorEvent event) {
+	private void startSessionSystemControllers(ComponentConstructorEvent event) {
 		new SessionWatchDogController(this).start();
 		new SessionSafeControlPlayers(this).start();
+		new HideOtherPlayers(this).start();
 		recoveryPlayerController = new RecoveryPlayerController(this);
 		recoveryPlayerController.start();
 		// run system tasks
 		getProcess().runControlledTaskTimer(mainProcess::optimiseTasks, Time.Seconds(60), Time.Seconds((60)));
 	}
 
-	protected abstract @Nonnull Board getDefaultStartBoard();
+	protected abstract @NotNull Board getDefaultStartBoard();
 }

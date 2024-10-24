@@ -7,13 +7,15 @@ import org.bukkit.WeatherType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import pl.szelagi.Scheduler;
+import pl.szelagi.SessionAPI;
 import pl.szelagi.buildin.system.SecureZone;
 import pl.szelagi.buildin.system.boardwatchdog.BoardWatchDogController;
 import pl.szelagi.component.BaseComponent;
+import pl.szelagi.component.ComponentStatus;
 import pl.szelagi.component.baseexception.StartException;
 import pl.szelagi.component.baseexception.StopException;
-import pl.szelagi.component.baseexception.multi.MultiStartException;
-import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.event.BoardStartEvent;
 import pl.szelagi.component.board.event.BoardStopEvent;
 import pl.szelagi.component.board.exception.BoardStartException;
@@ -50,14 +52,20 @@ public abstract class Board extends BaseComponent {
 
 	@MustBeInvokedByOverriders
 	public void start() throws StartException {
-		if (isEnable())
-			throw new MultiStartException(this);
-		if (isUsed)
-			throw new StartException("board start used");
-		startValid();
+		start(true, null);
+	}
 
-		setEnable(true);
-		isUsed = true;
+	@MustBeInvokedByOverriders
+	public void syncStart() throws StartException {
+		start(false, null);
+	}
+
+	@MustBeInvokedByOverriders
+	public void start(boolean async, @Nullable Runnable thenGenerate) throws StartException {
+		validateStartable();
+		validateNotStartedBefore();
+		setStatus(ComponentStatus.INITIALIZING);
+
 		Debug.send(this, "start");
 
 		remoteProcess = new RemoteProcess(this);
@@ -73,29 +81,52 @@ public abstract class Board extends BaseComponent {
 		}
 
 		Debug.send(this, "generate");
-		//syncBukkitTask(this::generate);
-		generate();
 
-		secureZoneValid();
+		Runnable lastAction = () -> {
+			if (thenGenerate != null) {
+				thenGenerate.run();
+			}
 
-		invokeSelfComponentConstructor();
-		invokeSelfPlayerConstructors();
+			secureZoneValid();
 
-		// BoardStartEvent
-		var event = new BoardStartEvent(this);
-		callBukkitEvent(event);
+			setStatus(ComponentStatus.RUNNING);
+
+			invokeSelfComponentConstructor();
+			invokeSelfPlayerConstructors();
+
+			var event = new BoardStartEvent(this);
+			callBukkitEvent(event);
+		};
+
+		if (async) {
+			var scheduler = Bukkit.getScheduler();
+			scheduler.runTaskAsynchronously(SessionAPI.getInstance(), () -> {
+				generate();
+				scheduler.runTask(SessionAPI.getInstance(), lastAction);
+			});
+		} else {
+			generate();
+			lastAction.run();
+		}
 	}
 
 	private void startBoardSystemControllers(ComponentConstructorEvent event) {
 		new BoardWatchDogController(this).start();
 		new SecureZone(this).start();
+		// TODO: It may be necessary to ensure that
+		// all session maps are checked by these controllers
 	}
 
 	@MustBeInvokedByOverriders
 	public void stop() throws StopException {
-		if (!isEnable())
-			throw new MultiStopException(this);
-		setEnable(false);
+		stop(true);
+	}
+
+	@MustBeInvokedByOverriders
+	public void stop(boolean async) throws StopException {
+		validateDisableable();
+		setStatus(ComponentStatus.SHUTTING_DOWN);
+
 		Debug.send(this, "stop");
 
 		invokeSelfPlayerDestructors();
@@ -105,38 +136,60 @@ public abstract class Board extends BaseComponent {
 
 		// degenerate
 		Debug.send(this, "degenerate");
-		degenerate();
 
-		// deallocate space
-		SpaceAllocator.deallocate(space);
+		Runnable lastAction = () -> {
+			// deallocate space
+			SpaceAllocator.deallocate(space);
 
-		// BoardStopEvent
-		var event = new BoardStopEvent(this);
-		Bukkit.getPluginManager()
-		      .callEvent(event);
+			// BoardStopEvent
+			var event = new BoardStopEvent(this);
+			Bukkit.getPluginManager()
+			      .callEvent(event);
+
+			setStatus(ComponentStatus.SHUTDOWN);
+		};
+
+		if (async) {
+			var scheduler = Bukkit.getScheduler();
+			scheduler.runTaskAsynchronously(SessionAPI.getInstance(), () -> {
+				degenerate();
+				scheduler.runTask(SessionAPI.getInstance(), lastAction);
+			});
+		} else {
+			degenerate();
+			lastAction.run();
+		}
 	}
 
 	protected void generate() {
-		getSpace().getCenter().getBlock()
-		          .setType(Material.BEDROCK);
+		Scheduler.runAndWait(() -> {
+			getSpace().getCenter().getBlock()
+			          .setType(Material.BEDROCK);
+		});
+
 		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME)) {
 			secureZone = boardFileManager.toSpatial(SCHEMATIC_DESTRUCTOR_NAME, getBase());
 		}
 		if (boardFileManager.existsSchematic(SCHEMATIC_CONSTRUCTOR_NAME)) {
 			boardFileManager.loadSchematic(SCHEMATIC_CONSTRUCTOR_NAME);
 		}
+
 		if (tagResolve != null) {
-			for (var l : tagResolve.toLocations())
-				l.getBlock()
-				 .setType(Material.AIR);
+			Scheduler.runAndWait(() -> {
+				for (var l : tagResolve.toLocations())
+					l.getBlock()
+					 .setType(Material.AIR);
+			});
 		}
 	}
 
 	protected void degenerate() {
 		if (boardFileManager.existsSchematic(SCHEMATIC_DESTRUCTOR_NAME))
 			boardFileManager.loadSchematic(SCHEMATIC_DESTRUCTOR_NAME);
-		for (var entity : getSpace().getMobsIn())
-			entity.remove();
+		Scheduler.runAndWait(() -> {
+			for (var entity : getSpace().getMobsIn())
+				entity.remove();
+		});
 	}
 
 	public final Location getBase() {

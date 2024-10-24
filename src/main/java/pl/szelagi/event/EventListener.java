@@ -1,3 +1,5 @@
 package pl.szelagi.event;
 
-public interface EventListener {}
+import pl.szelagi.component.ISessionComponent;
+
+public interface EventListener extends ISessionComponent {}
