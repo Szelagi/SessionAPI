@@ -2,9 +2,8 @@ package pl.szelagi.buildin.controller.life;
 
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.state.PlayerState;
-
-import javax.annotation.Nullable;
 
 public class LifePlayerState extends PlayerState {
 	private boolean isAlive;

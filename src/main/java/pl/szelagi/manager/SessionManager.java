@@ -5,12 +5,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.component.session.Session;
 import pl.szelagi.component.session.event.SessionStartEvent;
 import pl.szelagi.component.session.event.SessionStopEvent;
 import pl.szelagi.manager.compare.CompareSession;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +68,7 @@ public class SessionManager {
 				SESSIONS.remove(event.getSession());
 			}
 		}
-		p.getServer().getPluginManager().registerEvents(new ManagerListener(), p);
+		p.getServer().getPluginManager()
+		 .registerEvents(new ManagerListener(), p);
 	}
 }

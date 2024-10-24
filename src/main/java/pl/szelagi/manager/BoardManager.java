@@ -6,13 +6,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.board.event.BoardStartEvent;
 import pl.szelagi.component.board.event.BoardStopEvent;
 import pl.szelagi.component.session.Session;
 import pl.szelagi.space.Space;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 
 public class BoardManager {
