@@ -6,6 +6,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pl.szelagi.component.baseexception.StartException;
+import pl.szelagi.component.baseexception.StopException;
+import pl.szelagi.component.baseexception.multi.MultiStartException;
+import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.controller.Controller;
 import pl.szelagi.component.session.Session;
@@ -38,14 +42,14 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	private final UUID uuid = UUID.randomUUID();
 	private final long id = incrementalGenerator.next();
 	private final String name = generateName();
-	private boolean isEnable = false;
+	private ComponentStatus status = ComponentStatus.NOT_INITIALIZED;
 
-	public final boolean isEnable() {
-		return isEnable;
+	public @NotNull ComponentStatus status() {
+		return status;
 	}
 
-	protected final void setEnable(boolean enable) {
-		isEnable = enable;
+	public void setStatus(ComponentStatus status) {
+		this.status = status;
 	}
 
 	public final UUID getUuid() {
@@ -59,6 +63,10 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	@Override
 	public @NotNull String getName() {
 		return name;
+	}
+
+	public @NotNull String getIdentifier() {
+		return getName() + ":" + getId();
 	}
 
 	private char getComponentTypeChar() {
@@ -171,5 +179,23 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	@Override
 	public String toString() {
 		return "BaseComponent{" + "id=" + id + ", name='" + name + '\'' + '}';
+	}
+
+	protected final void validateStartable() throws StartException {
+		if (getParentProcess() == null && !(this instanceof Session))
+			throw new StartException("Failed attempt to start " + getName() + ", because parent is not running");
+
+		if (status() != ComponentStatus.NOT_INITIALIZED && status() != ComponentStatus.SHUTDOWN)
+			throw new MultiStartException(this);
+	}
+
+	protected final void validateDisableable() throws StopException {
+		if (status() != ComponentStatus.RUNNING)
+			throw new MultiStopException(this);
+	}
+
+	protected final void validateNotStartedBefore() throws StartException {
+		if (status() != ComponentStatus.NOT_INITIALIZED)
+			throw new StartException("board start used");
 	}
 }

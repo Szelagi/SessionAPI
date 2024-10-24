@@ -7,11 +7,10 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pl.szelagi.component.BaseComponent;
+import pl.szelagi.component.ComponentStatus;
 import pl.szelagi.component.ISessionComponent;
 import pl.szelagi.component.baseexception.StartException;
 import pl.szelagi.component.baseexception.StopException;
-import pl.szelagi.component.baseexception.multi.MultiStartException;
-import pl.szelagi.component.baseexception.multi.MultiStopException;
 import pl.szelagi.component.controller.event.ControllerStartEvent;
 import pl.szelagi.component.controller.event.ControllerStopEvent;
 import pl.szelagi.component.session.Session;
@@ -40,9 +39,9 @@ public abstract class Controller extends BaseComponent {
 
 	@MustBeInvokedByOverriders
 	public void start() throws StartException {
-		if (isEnable())
-			throw new MultiStartException(this);
-		setEnable(true);
+		validateStartable();
+		validateNotStartedBefore();
+		setStatus(ComponentStatus.RUNNING);
 		Debug.send(this, "start");
 
 		remoteProcess = new RemoteProcess(this);
@@ -58,9 +57,8 @@ public abstract class Controller extends BaseComponent {
 
 	@MustBeInvokedByOverriders
 	public void stop() throws StopException {
-		if (!isEnable())
-			throw new MultiStopException(this);
-		setEnable(false);
+		validateDisableable();
+
 		Debug.send(this, "stop");
 
 		invokeSelfPlayerDestructors();
@@ -69,13 +67,14 @@ public abstract class Controller extends BaseComponent {
 		// destroy hierarchy, tasks, listeners
 		remoteProcess.destroy();
 
+		setStatus(ComponentStatus.SHUTDOWN);
 		// ControllerStopEvent
 		var event = new ControllerStopEvent(this);
 		Bukkit.getPluginManager()
 		      .callEvent(event);
 	}
 
-	public final @NotNull RemoteProcess getProcess() {
+	public final RemoteProcess getProcess() {
 		return remoteProcess;
 	}
 
@@ -87,7 +86,7 @@ public abstract class Controller extends BaseComponent {
 		return session;
 	}
 
-	public final @NotNull RemoteProcess getParentProcess() {
+	public final RemoteProcess getParentProcess() {
 		return parentProcess;
 	}
 
