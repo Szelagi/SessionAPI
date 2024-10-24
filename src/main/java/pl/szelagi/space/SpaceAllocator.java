@@ -46,7 +46,8 @@ public class SpaceAllocator {
 	}
 
 	private static boolean isExistsSpace(ArrayList<SpaceAllocate> allocates, int slot) {
-		return allocates.stream().anyMatch(spaceAllocate -> spaceAllocate.getSlot() == slot);
+		return allocates.stream()
+		                .anyMatch(spaceAllocate -> spaceAllocate.getSlot() == slot);
 	}
 
 	@Nullable
@@ -54,12 +55,16 @@ public class SpaceAllocator {
 		var allocates = totalAllocations.get(world);
 		if (allocates == null)
 			return null;
-		return allocates.stream().filter(sa -> sa.getSlot() == slot).findFirst().orElse(null);
+		return allocates.stream()
+		                .filter(sa -> sa.getSlot() == slot)
+		                .findFirst().orElse(null);
 	}
 
 	@Nullable
 	private static SpaceAllocate getSpaceAllocate(@NotNull ArrayList<SpaceAllocate> allocates, int slot) {
-		return allocates.stream().filter(sa -> sa.getSlot() == slot).findFirst().orElse(null);
+		return allocates.stream()
+		                .filter(sa -> sa.getSlot() == slot)
+		                .findFirst().orElse(null);
 	}
 
 	private static boolean deleteAllocate(SpaceAllocate spaceAllocate) {
@@ -92,7 +97,10 @@ public class SpaceAllocator {
 			throw new DeallocateException("allocates ArrayList is not initialized", space);
 		if (allocates.isEmpty())
 			throw new DeallocateException("allocates ArrayList is empty", space);
-		var spaceAllocate = allocates.stream().filter(sa -> sa.getSlot() == space.getSlot()).findFirst().orElse(null);
+		var spaceAllocate = allocates.stream()
+		                             .filter(sa -> sa.getSlot() == space.getSlot())
+		                             .findFirst()
+		                             .orElse(null);
 		if (spaceAllocate == null)
 			throw new DeallocateException("allocates ArrayList do not exists element", space);
 		spaceAllocate.setAllocate(false);

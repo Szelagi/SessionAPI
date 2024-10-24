@@ -22,9 +22,9 @@ public class TagQuery extends ArrayList<Tag> implements Serializable {
 		return tag;
 	}
 
-	//	public @NotNull Tag getFirst() {
-	//		return get(0);
-	//	}
+	public @NotNull Tag getFirst() {
+		return get(0);
+	}
 
 	public @NotNull Location getFirstLocation() {
 		return get(0).getLocation();
@@ -43,7 +43,7 @@ public class TagQuery extends ArrayList<Tag> implements Serializable {
 		return stream().filter(predicate)
 		               .toList();
 	}
-
+ 
 	public @Nullable Tag find(Predicate<Tag> predicate) {
 		return stream().filter(predicate)
 		               .findFirst().orElse(null);

@@ -6,11 +6,13 @@ import pl.szelagi.component.session.Session;
 import pl.szelagi.process.RemoteProcess;
 
 public interface ISessionComponent {
-	@NotNull RemoteProcess getProcess();
+	RemoteProcess getProcess();
 
 	@NotNull Session getSession();
 
 	@NotNull JavaPlugin getPlugin();
 
 	@NotNull String getName();
+
+	@NotNull ComponentStatus status();
 }

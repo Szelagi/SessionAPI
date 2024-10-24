@@ -37,6 +37,22 @@ public interface ISpatial extends Cloneable {
 		};
 	}
 
+	static ISpatial from(Block block) {
+		return new ISpatial() {
+			@Override
+			public @NotNull Location getFirstPoint() {
+				return block.getLocation()
+				            .clone();
+			}
+
+			@Override
+			public @NotNull Location getSecondPoint() {
+				return block.getLocation()
+				            .clone();
+			}
+		};
+	}
+
 	private static double average(double... numbers) {
 		double sum = 0;
 		for (var num : numbers)

@@ -82,6 +82,7 @@ public class LegacyStore extends Controller {
 		                             .spawn(itemFrameLocation, ItemFrame.class, itemFrame -> {
 			                             itemFrame.setFacingDirection(blockFace);
 			                             itemFrame.setItem(item);
+			                             itemFrame.setVisible(false);
 		                             });
 	}
 

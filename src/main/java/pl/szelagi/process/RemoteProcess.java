@@ -273,4 +273,9 @@ public class RemoteProcess extends Process implements IControlProcess {
 		processTask.getBukkitTask().cancel();
 		tasks.remove(processTask);
 	}
+
+	@Override
+	public String toString() {
+		return "RemoteProcess{" + "component=" + component + '}';
+	}
 }

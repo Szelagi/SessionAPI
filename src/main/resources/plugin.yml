@@ -29,3 +29,13 @@ commands:
     description: "show debug"
   hide-debug:
     description: "hide debug"
+  tetest:
+    description: "test"
+  mobgame:
+    description: "start mobgame"
+  dual:
+    description: "start dual"
+  "randomgame":
+    description: "start random"
+  "uw":
+    description: "UW"

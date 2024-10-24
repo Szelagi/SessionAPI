@@ -17,6 +17,11 @@ public interface ISchematicFileManager extends IFileManager, ISchematicMethods, 
 		ISchematicMethods.loadAndPlaceSchematic(schematicPath, this);
 	}
 
+	default void asyncLoadSchematic(String name) throws SchematicException {
+		String schematicPath = getCurrentDirectory().getPath() + "/" + name + SCHEMATIC_EXTENSION;
+		ISchematicMethods.asyncLoadAndPlaceSchematic(schematicPath, this);
+	}
+
 	default void saveSchematic(String name, ISpatial optimized) throws SchematicException {
 		var path = getCurrentDirectory().getPath() + "/" + name + SCHEMATIC_EXTENSION;
 		tryMakeHeadDirectory();

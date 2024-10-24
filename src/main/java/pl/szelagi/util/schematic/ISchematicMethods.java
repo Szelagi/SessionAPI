@@ -14,10 +14,12 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.block.BlockTypes;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import pl.szelagi.SessionAPI;
 import pl.szelagi.spatial.ISpatial;
 
 import java.io.File;
@@ -41,6 +43,10 @@ public interface ISchematicMethods {
 
 	static void loadAndPlaceSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
 		loadAndPlaceSchematic(filePath, ISpatial.getCenterBlockLocation());
+	}
+
+	static void asyncLoadAndPlaceSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
+		asyncLoadAndPlaceSchematic(filePath, ISpatial.getCenterBlockLocation());
 	}
 
 	static void copyAndSaveSchematic(@NotNull String filePath, @NotNull ISpatial ISpatial) throws SchematicException {
@@ -105,7 +111,7 @@ public interface ISchematicMethods {
 			throw new SchematicException(e.getMessage());
 		}
 	}
-	
+
 	private static @NotNull ISpatial toSchematicSpatialCore(@NotNull String filePath, @NotNull Location base) throws SchematicException {
 		File file = new File(filePath);
 		ClipboardFormat format = ClipboardFormats.findByFile(file);
@@ -144,6 +150,11 @@ public interface ISchematicMethods {
 		} catch (Exception e) {
 			throw new SchematicException(e.getMessage());
 		}
+	}
+
+	public static void asyncLoadAndPlaceSchematic(@NotNull String filePath, @NotNull Location toLocation) throws SchematicException {
+		Bukkit.getScheduler()
+		      .runTaskAsynchronously(SessionAPI.getInstance(), () -> loadAndPlaceSchematicCore(filePath, toLocation));
 	}
 
 	private static void copyAndSaveSchematicCore(@NotNull String filePath, @NotNull Location location1, @NotNull Location location2, @NotNull Location toLocation) throws SchematicException {
@@ -205,6 +216,17 @@ public interface ISchematicMethods {
 		CuboidRegion region = new CuboidRegion(world, min, max);
 		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
 		clipboard.setOrigin(to);
+
+		try (EditSession editSession = WorldEdit
+				.getInstance()
+				.newEditSession(world)) {
+			for (BlockVector3 vec : region) {
+				assert BlockTypes.AIR != null;
+				clipboard.setBlock(vec, BlockTypes.AIR.getDefaultState());
+			}
+		} catch (Exception e) {
+			throw new SchematicException("Error while setting blocks to AIR: " + e.getMessage());
+		}
 
 		try {
 			try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {

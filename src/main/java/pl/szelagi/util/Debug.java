@@ -25,6 +25,10 @@ public class Debug {
 		}
 	}
 
+	public static boolean isAllowView(Player player) {
+		return allowPlayers.contains(player);
+	}
+
 	public static void send(ISessionComponent component, String message) {
 		String prefix = "";
 		if (component instanceof Controller)
