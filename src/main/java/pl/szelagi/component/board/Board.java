@@ -80,7 +80,7 @@ public abstract class Board extends BaseComponent {
 			this.tagResolve = new TagResolve();
 		}
 
-		Debug.send(this, "generate");
+		Debug.send(this, "generating...");
 
 		Runnable lastAction = () -> {
 			if (thenGenerate != null) {
@@ -91,21 +91,21 @@ public abstract class Board extends BaseComponent {
 
 			setStatus(ComponentStatus.RUNNING);
 
-			invokeSelfComponentConstructor();
-			invokeSelfPlayerConstructors();
+			invokeSelf();
 
 			var event = new BoardStartEvent(this);
 			callBukkitEvent(event);
 		};
 
 		if (async) {
-			var scheduler = Bukkit.getScheduler();
-			scheduler.runTaskAsynchronously(SessionAPI.getInstance(), () -> {
+			Scheduler.runTaskAsync(() -> {
 				generate();
-				scheduler.runTask(SessionAPI.getInstance(), lastAction);
+				Debug.send(this, "generate done");
+				Scheduler.runAndWait(lastAction);
 			});
 		} else {
 			generate();
+			Debug.send(this, "generate done");
 			lastAction.run();
 		}
 	}

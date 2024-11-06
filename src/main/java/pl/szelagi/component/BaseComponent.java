@@ -27,10 +27,9 @@ import pl.szelagi.util.IncrementalGenerator;
 import pl.szelagi.util.PluginRegistry;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 // Component must implement methods:
@@ -43,13 +42,22 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	private final long id = incrementalGenerator.next();
 	private final String name = generateName();
 	private ComponentStatus status = ComponentStatus.NOT_INITIALIZED;
+	private boolean isSynchronized = false;
 
 	public @NotNull ComponentStatus status() {
 		return status;
 	}
 
-	public void setStatus(ComponentStatus status) {
+	protected void setStatus(ComponentStatus status) {
 		this.status = status;
+	}
+
+	public boolean isSynchronized() {
+		return isSynchronized;
+	}
+
+	public void setSynchronized(boolean aSynchronized) {
+		isSynchronized = aSynchronized;
 	}
 
 	public final UUID getUuid() {
@@ -111,7 +119,7 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 		                 .collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	protected final void invokeSelfPlayerConstructors() {
+	public final void invokeSelfPlayerConstructors() {
 		var players = getSession().getPlayers();
 		var clone = new ArrayList<>(players);
 		clone.forEach((p) -> invokeSelfPlayerConstructor(p, players));
@@ -197,5 +205,66 @@ public abstract class BaseComponent implements ISessionComponent, EventListener 
 	protected final void validateNotStartedBefore() throws StartException {
 		if (status() != ComponentStatus.NOT_INITIALIZED)
 			throw new StartException("board start used");
+	}
+
+	protected final void recursivelyInvokeOnAllProcesses(Collection<RemoteProcess> processes, Consumer<RemoteProcess> consumer) {
+		Deque<RemoteProcess> queue = new ArrayDeque<>(processes);
+
+		while (!queue.isEmpty()) {
+			RemoteProcess currentProcess = queue.poll();
+			consumer.accept(currentProcess);
+			queue.addAll(currentProcess.getRemoteProcesses());
+		}
+	}
+
+	private static final Consumer<RemoteProcess> invokePlayerConstructorOnProcess = (process -> {
+		var component = process.getComponent();
+		if (component == null)
+			return;
+		component.setSynchronized(true);
+		component.invokeSelfPlayerConstructors();
+	});
+
+	protected void recursivelyInvokePlayerConstructor(Collection<RemoteProcess> processes) {
+		recursivelyInvokeOnAllProcesses(processes, invokePlayerConstructorOnProcess);
+	}
+
+	protected void invokePlayerConstructorOnProcess(RemoteProcess processes) {
+		invokePlayerConstructorOnProcess.accept(processes);
+	}
+
+	/**
+	 * This method is used to recursively invoke the constructors of components,
+	 * as well as the constructors of player objects, in the exact same order.
+	 */
+	protected void invokeSelf() {
+		var afterChildrenProcesses = getProcess()
+				.getRemoteProcesses().size();
+
+		invokeSelfComponentConstructor();
+
+		var beforeChildrenProcesses = getProcess()
+				.getRemoteProcesses().size();
+
+		var hasChildrenProcesses = beforeChildrenProcesses > afterChildrenProcesses;
+		if (!hasChildrenProcesses) {
+
+			Predicate<RemoteProcess> applicable = (process) -> {
+				if (process == null)
+					return false;
+				var component = process.getComponent();
+				if (component == null)
+					return false;
+				return !component.isSynchronized();
+			};
+
+			var firstProcess = getProcess();
+			while (applicable.test(firstProcess.getParentRemoteProcess())) {
+				firstProcess = firstProcess.getParentRemoteProcess();
+			}
+
+			invokePlayerConstructorOnProcess(firstProcess);
+			recursivelyInvokePlayerConstructor(firstProcess.getRemoteProcesses());
+		}
 	}
 }

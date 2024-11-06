@@ -40,15 +40,13 @@ public abstract class Controller extends BaseComponent {
 	@MustBeInvokedByOverriders
 	public void start() throws StartException {
 		validateStartable();
-		validateNotStartedBefore();
 		setStatus(ComponentStatus.RUNNING);
 		Debug.send(this, "start");
 
 		remoteProcess = new RemoteProcess(this);
 		remoteProcess.registerListener(this);
 
-		invokeSelfComponentConstructor();
-		invokeSelfPlayerConstructors();
+		invokeSelf();
 
 		// ControllerStartEvent
 		var event = new ControllerStartEvent(this);
@@ -63,6 +61,8 @@ public abstract class Controller extends BaseComponent {
 
 		invokeSelfPlayerDestructors();
 		invokeSelfComponentDestructor();
+
+		setSynchronized(false);
 
 		// destroy hierarchy, tasks, listeners
 		remoteProcess.destroy();

@@ -66,8 +66,7 @@ public abstract class Session extends BaseComponent {
 		remoteProcess = new RemoteProcess(mainProcess);
 		remoteProcess.registerListener(this);
 
-		invokeSelfComponentConstructor();
-		invokeSelfPlayerConstructors();
+		invokeSelf();
 
 		var event = new SessionStartEvent(this);
 		callBukkitEvent(event);
