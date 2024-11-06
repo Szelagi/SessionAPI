@@ -1,6 +1,8 @@
 package pl.szelagi.command;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.CommandBlock;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -9,9 +11,12 @@ import org.jetbrains.annotations.NotNull;
 import pl.szelagi.SessionAPI;
 import pl.szelagi.buildin.creator.Creator;
 import pl.szelagi.buildin.creator.CreatorBoard;
+import pl.szelagi.buildin.system.archerySession.ArcherySession;
 import pl.szelagi.buildin.system.testsession.TestSession;
-import pl.szelagi.buildin.testzone.first.MyContainer;
+import pl.szelagi.buildin.testzone.dual.Dual;
 import pl.szelagi.buildin.testzone.mobarena.MobGame;
+import pl.szelagi.buildin.testzone.random.RandomGame;
+import pl.szelagi.buildin.testzone.uw.UwGame;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.cause.NeutralCause;
 import pl.szelagi.component.session.exception.SessionStartException;
@@ -19,6 +24,8 @@ import pl.szelagi.component.session.exception.player.initialize.RejectedPlayerEx
 import pl.szelagi.manager.SessionManager;
 import pl.szelagi.tag.TagAnalyzer;
 import pl.szelagi.util.Debug;
+
+import static org.bukkit.Bukkit.getServer;
 
 public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 	private final JavaPlugin plugin;
@@ -208,7 +215,9 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 				}
 			}
 			case "test-session" -> {
-				new TestSession(plugin).start();
+				var se = new TestSession(plugin);
+				se.start();
+				//se.addPlayer(player);
 				player.sendMessage("§aOK");
 			}
 			case "show-debug" -> {
@@ -220,14 +229,46 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 				player.sendMessage("§aOK");
 			}
 			case "tetest" -> {
-				var a = new MyContainer(plugin);
-				a.start();
-				a.addPlayer(player);
+				//				var a = new MyContainer(plugin);
+				//				a.start();
+				//				a.addPlayer(player);
+				var a = Material.COMMAND_BLOCK.createBlockData();
+				var b = a.createBlockState();
+				var cc = (CommandBlock) b;
+				cc.setCommand("say hello");
+				cc.update(true, true);
+
+				for (var p : getServer().getOnlinePlayers()) {
+					p.sendBlockChange(p.getLocation(), cc.getBlockData());
+					p.sendBlockUpdate(p.getLocation(), cc);
+					//					p.sendBlockUpdate(p.getLocation(), (TileState) cc);
+				}
 			}
 			case "mobgame" -> {
 				var a = new MobGame(plugin);
 				a.start();
+				//				a.addPlayer(player);
+			}
+			case "dual" -> {
+				var a = new Dual(plugin);
+				a.start();
 				a.addPlayer(player);
+			}
+			case "randomgame" -> {
+				var a = new RandomGame(plugin);
+				a.start();
+				a.addPlayer(player);
+			}
+			case "uw" -> {
+				var uw = new UwGame(plugin);
+				uw.start();
+				uw.addPlayer(player);
+			}
+
+			case "archery" -> {
+				var game = new ArcherySession(plugin);
+				game.start();
+				game.addPlayer(player);
 			}
 		}
 		return true;

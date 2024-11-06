@@ -17,7 +17,7 @@ import pl.szelagi.buildin.controller.OtherGameMode.OtherGameMode;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.board.filemanager.BoardFileManager;
 import pl.szelagi.component.session.Session;
-import pl.szelagi.event.player.initialize.PlayerConstructorEvent;
+import pl.szelagi.event.component.ComponentConstructorEvent;
 import pl.szelagi.spatial.ISpatial;
 
 public class CreatorBoard extends Board {
@@ -78,15 +78,10 @@ public class CreatorBoard extends Board {
 	}
 
 	@Override
-	public void start() {
-		super.start();
+	public void componentConstructor(ComponentConstructorEvent event) {
+		super.componentConstructor(event);
 		new NoCreatureDropController(this).start();
 		new OtherEquipment(this, true).start();
 		new OtherGameMode(this, GameMode.CREATIVE).start();
-	}
-
-	@Override
-	public void playerConstructor(PlayerConstructorEvent event) {
-		super.playerConstructor(event);
 	}
 }

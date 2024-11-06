@@ -80,7 +80,7 @@ public class BarTimerController extends Controller {
 		var percentNormalized = Math.min(Math.max(0, percent), 1);
 		var remaining = (ticks - (ticks - remainingTicks)) / 20d;
 		var formattedMessage = String.format(template, remaining);
-		
+
 		bar.setProgress(percentNormalized);
 		bar.setTitle(formattedMessage);
 	}
