@@ -2,7 +2,6 @@ import {defineConfig} from 'vitepress'
 
 // https://vitepress.vuejs.org/config/app-configs
 export default defineConfig({
-    // extends: DefaultTheme,
     head: [
         ['link', {rel: 'icon', type: 'image/svg+xml', href: '/img/logo.svg'}],
         ['meta', {name: 'keywords', content: 'SessionAPI, Minecraft, game, containerization, server, minigames'}],
@@ -14,6 +13,7 @@ export default defineConfig({
     title: 'SessionAPI',
     description: 'The library facilitates game containerization on a Minecraft server, enabling the creation of isolated environments within the game with separate logic and state.',
     outDir: "../../docs",
+    base: "/docs",
     themeConfig: {
         logo: 'img/logo.svg',
         nav: [
