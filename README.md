@@ -42,13 +42,17 @@ container. This mechanism relies on generating a separate map for each instance 
 game state. With this solution, each container instance operates independently of the others, minimizing mutual
 interference.
 
+## Important Links
+
+* [Official Documentation](https://szelagi.github.io/SessionAPI/) – Comprehensive, up-to-date resource for using and
+  understanding SessionAPI, covering all key functionalities and advanced features.
+
+* [Getting Started Guide](TUTORIAL.md) – Quick-start guide within the repository to help you set up and begin working
+  with SessionAPI. For the latest information, see the official documentation.
+
 ## Installation
 
 1. Download the latest version of the plugin from releases.
 2. Include the downloaded plugin as a library in your Java project.
 3. Set `depend: [SessionAPI]` in the `plugin.yml` file.
 4. Copy the downloaded plugin to the server's plugin folder `/plugins`.
-
-## Tutorial
-
-* [TUTORIAL](TUTORIAL.md)
