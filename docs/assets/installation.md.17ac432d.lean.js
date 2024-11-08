@@ -1,0 +1,1 @@
+import{_ as e,c as a,o as i,d as o}from"./app.fbb367f3.js";const k=JSON.parse('{"title":"Instalacja","description":"","frontmatter":{},"headers":[],"relativePath":"installation.md"}'),s={name:"installation.md"},t=o("",3),n=[t];function r(l,c,d,p,_,m){return i(),a("div",null,n)}const h=e(s,[["render",r]]);export{k as __pageData,h as default};
