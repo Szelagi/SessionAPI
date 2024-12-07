@@ -24,7 +24,6 @@ import pl.szelagi.buildin.controller.interaction.NoPvP;
 import pl.szelagi.buildin.controller.interaction.ProtectItemFrame;
 import pl.szelagi.buildin.controller.life.Life;
 import pl.szelagi.buildin.lobby.Lobby;
-import pl.szelagi.buildin.testzone.multi.AC;
 import pl.szelagi.component.ComponentStatus;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.Session;
@@ -71,7 +70,6 @@ public class ArcheryBoard extends Board {
 		          .bind(this::gameStart);
 		this.lobby.start();
 
-		new AC(this).start();
 		life = new Life(this, 5, Time.Seconds(30));
 		life.start();
 

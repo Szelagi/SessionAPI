@@ -13,10 +13,6 @@ import pl.szelagi.buildin.creator.Creator;
 import pl.szelagi.buildin.creator.CreatorBoard;
 import pl.szelagi.buildin.system.archerySession.ArcherySession;
 import pl.szelagi.buildin.system.testsession.TestSession;
-import pl.szelagi.buildin.testzone.dual.Dual;
-import pl.szelagi.buildin.testzone.mobarena.MobGame;
-import pl.szelagi.buildin.testzone.random.RandomGame;
-import pl.szelagi.buildin.testzone.uw.UwGame;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.component.session.cause.NeutralCause;
 import pl.szelagi.component.session.exception.SessionStartException;
@@ -243,26 +239,6 @@ public class CommandExecutor implements org.bukkit.command.CommandExecutor {
 					p.sendBlockUpdate(p.getLocation(), cc);
 					//					p.sendBlockUpdate(p.getLocation(), (TileState) cc);
 				}
-			}
-			case "mobgame" -> {
-				var a = new MobGame(plugin);
-				a.start();
-				//				a.addPlayer(player);
-			}
-			case "dual" -> {
-				var a = new Dual(plugin);
-				a.start();
-				a.addPlayer(player);
-			}
-			case "randomgame" -> {
-				var a = new RandomGame(plugin);
-				a.start();
-				a.addPlayer(player);
-			}
-			case "uw" -> {
-				var uw = new UwGame(plugin);
-				uw.start();
-				uw.addPlayer(player);
 			}
 
 			case "archery" -> {
