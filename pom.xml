@@ -77,31 +77,27 @@
             <version>1.20.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!--      WorldEdit     -->
-        <dependency>
-            <groupId>com.sk89q.worldedit</groupId>
-            <artifactId>worldedit-core</artifactId>
-            <version>7.3.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sk89q.worldedit</groupId>
-            <artifactId>worldedit-bukkit</artifactId>
-            <version>7.3.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
+
         <!--        fawe-->
         <!-- https://mvnrepository.com/artifact/com.fastasyncworldedit/FastAsyncWorldEdit-Core -->
         <dependency>
             <groupId>com.fastasyncworldedit</groupId>
             <artifactId>FastAsyncWorldEdit-Core</artifactId>
+            <scope>provided</scope>
             <version>2.11.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fastasyncworldedit/FastAsyncWorldEdit-Bukkit -->
         <dependency>
             <groupId>com.fastasyncworldedit</groupId>
             <artifactId>FastAsyncWorldEdit-Bukkit</artifactId>
+            <scope>provided</scope>
             <version>2.11.2</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>FastAsyncWorldEdit-Core</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Zaleznosc do javax.annotation -->

@@ -4,6 +4,9 @@ version: '${project.version}'
 main: pl.szelagi.SessionAPI
 api-version: '1.20'
 authors: [ Szelagi ]
+depend:
+  - FastAsyncWorldEdit
+
 commands:
   #   Board editor
   board-save:
