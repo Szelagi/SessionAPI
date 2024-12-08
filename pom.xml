@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>pl.szelagi</groupId>
-    <artifactId>SessionAPI</artifactId>
-    <version>2.1-SNAPSHOT</version>
+    <artifactId>sessionapi</artifactId>
+    <version>2.1.0</version>
     <packaging>jar</packaging>
 
     <name>SessionAPI</name>
@@ -51,25 +51,26 @@
         </resources>
     </build>
 
-    <!-- deploy -->
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/Szelagi/SessionAPI</url>
-        </repository>
-    </distributionManagement>
-
-    <scm>
-        <url>https://github.com/Szelagi/SessionAPI</url>
-        <connection>scm:git:git://github.com/Szelagi/SessionAPI.git</connection>
-    </scm>
-
     <developers>
         <developer>
             <id>Szelagi</id>
             <name>Kamil Szelągiewicz</name>
+            <url>https://github.com/Szelagi</url>
+            <roles>
+                <role>Owner</role>
+                <role>Developer</role>
+            </roles>
         </developer>
     </developers>
+
+    <!-- deploy -->
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Szelagi Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Szelagi/SessionAPI</url>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
@@ -109,7 +110,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.20.2-R0.1-SNAPSHOT</version>
+            <version>1.21.3-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -131,13 +132,6 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <!-- javax.annotation -->
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
         </dependency>
     </dependencies>
 
