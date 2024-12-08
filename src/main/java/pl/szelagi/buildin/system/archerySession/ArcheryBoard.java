@@ -78,7 +78,7 @@ public class ArcheryBoard extends Board {
 				.setBreakFlag(Material.FIRE, true)
 				.setBreakFlag(Material.COBWEB, true)
 				.setPlaceFlag(Material.COBWEB, true)
-				.setBreakFlag(Material.GRASS, true)
+				.setBreakFlag(Material.SHORT_GRASS, true)
 				.setBreakFlag(Material.TALL_GRASS, true)
 				.start();
 		new ProtectItemFrame(this).start();
@@ -132,7 +132,7 @@ public class ArcheryBoard extends Board {
 			            player.sendMessage("§aRound WIN!");
 			            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 8 * 20, 1));
 			            player.removePotionEffect(PotionEffectType.POISON);
-			            player.removePotionEffect(PotionEffectType.SLOW);
+			            player.removePotionEffect(PotionEffectType.SLOWNESS);
 			            player.removePotionEffect(PotionEffectType.WEAKNESS);
 			            player.setFireTicks(0);
 

@@ -105,12 +105,12 @@ public class Life extends Controller {
 	private void actionSingleHasLives(Player p) {
 		var effects = new ArrayList<PotionEffect>();
 		effects.add(new PotionEffect(PotionEffectType.SPEED, 20 * 2, 1, false));
-		effects.add(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, (int) (20 * 1.5f), 3, false));
+		effects.add(new PotionEffect(PotionEffectType.RESISTANCE, (int) (20 * 1.5f), 3, false));
 		effects.add(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 6, 2, false));
 		effects.add(new PotionEffect(PotionEffectType.BLINDNESS, 30, 1, false));
 		p.addPotionEffects(effects);
 		p.playSound(p.getLocation(), Sound.ITEM_TOTEM_USE, 1, 1);
-		p.spawnParticle(Particle.TOTEM, p.getLocation(), 50, 0.3f, 0.3f, 0.3f, 1f);
+		p.spawnParticle(Particle.TOTEM_OF_UNDYING, p.getLocation(), 50, 0.3f, 0.3f, 0.3f, 1f);
 		p.playEffect(EntityEffect.TOTEM_RESURRECT);
 		p.setHealth(8);
 		// todo add potem animation and remain lives and You death

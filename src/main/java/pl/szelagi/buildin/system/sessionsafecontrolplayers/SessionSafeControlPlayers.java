@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SessionSafeControlPlayers extends Controller {
-	private static final ArrayList<PotionEffectType> NEGATIVE_POTION_TYPES = new ArrayList<>(List.of(PotionEffectType.POISON, PotionEffectType.WITHER, PotionEffectType.WEAKNESS, PotionEffectType.DARKNESS, PotionEffectType.BLINDNESS, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.LEVITATION, PotionEffectType.CONFUSION, PotionEffectType.BAD_OMEN, PotionEffectType.HUNGER, PotionEffectType.GLOWING));
+	private static final ArrayList<PotionEffectType> NEGATIVE_POTION_TYPES = new ArrayList<>(List.of(PotionEffectType.POISON, PotionEffectType.WITHER, PotionEffectType.WEAKNESS, PotionEffectType.DARKNESS, PotionEffectType.BLINDNESS, PotionEffectType.SLOWNESS, PotionEffectType.MINING_FATIGUE, PotionEffectType.LEVITATION, PotionEffectType.NAUSEA, PotionEffectType.BAD_OMEN, PotionEffectType.HUNGER, PotionEffectType.GLOWING));
 	private final PlayerContainer<SessionSafeControlPlayerState> stateContainer = new PlayerContainer<>(SessionSafeControlPlayerState::new);
 
 	public SessionSafeControlPlayers(ISessionComponent sessionComponent) {

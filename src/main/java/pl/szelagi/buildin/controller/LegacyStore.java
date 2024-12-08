@@ -133,11 +133,11 @@ public class LegacyStore extends Controller {
 
 			var successSound = Sound.sound(Key.key("entity.villager.trade"), Sound.Source.AMBIENT, 1f, 1f);
 			audience.playSound(successSound);
-			player.spawnParticle(Particle.VILLAGER_HAPPY, center(buttonLocation), 1);
+			player.spawnParticle(Particle.HAPPY_VILLAGER, center(buttonLocation), 1);
 		} else {
 			var failedSound = Sound.sound(Key.key("entity.villager.hurt"), Sound.Source.AMBIENT, 1f, 1f);
 			audience.playSound(failedSound);
-			player.spawnParticle(Particle.VILLAGER_ANGRY, center(buttonLocation), 1);
+			player.spawnParticle(Particle.HAPPY_VILLAGER, center(buttonLocation), 1);
 		}
 	}
 
