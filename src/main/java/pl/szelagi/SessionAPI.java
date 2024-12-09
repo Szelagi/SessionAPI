@@ -3,8 +3,7 @@ package pl.szelagi;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.ServerOperator;
 import org.bukkit.plugin.java.JavaPlugin;
-import pl.szelagi.command.CommandExecutor;
-import pl.szelagi.command.ConstructTabCompleter;
+import pl.szelagi.command.Command;
 import pl.szelagi.manager.BoardManager;
 import pl.szelagi.manager.ControllerManager;
 import pl.szelagi.manager.SessionManager;
@@ -44,8 +43,7 @@ public final class SessionAPI extends JavaPlugin {
 		Recovery.initialize(this);
 
 		SessionWorldManager.initialize(this);
-		CommandExecutor.initialize(this);
-		ConstructTabCompleter.initialize(this);
+		Command.registerCommands();
 	}
 
 	@Override

@@ -1,0 +1,71 @@
+package pl.szelagi.command;
+
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
+import pl.szelagi.component.session.Session;
+import pl.szelagi.manager.SessionManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class CommandHelper {
+    public static final String PREFIX = "§6[§eSessionAPI§6] §r";
+    public static @Nullable Session sessionByNameId(String nameId) {
+        return SessionManager
+                .getSessions().stream()
+                .filter(loopSession -> {
+                    var name = loopSession.getName() + ":" + loopSession.getId();
+                    return nameId.equals(name);
+                }).findFirst()
+                .orElse(null);
+    }
+    public static List<String> sessionsComplete(CommandSender commandSender) {
+        var sessions = SessionManager.getSessions().stream().map(session -> session.getName() + ":" + session.getId()).collect(Collectors.toCollection(ArrayList::new));
+
+        if (commandSender instanceof Player player) {
+            var session = SessionManager.getSession(player);
+            if (session != null) {
+                sessions.addFirst("current");
+            }
+        }
+
+        return sessions;
+    }
+
+    public static @Nullable Session selectSession(CommandSender commandSender, String sessionString) {
+
+        Session session;
+        if (sessionString.equals("current")) {
+
+            if (!(commandSender instanceof Player player)) {
+                commandSender.sendMessage(PREFIX + "§cOnly players can use the 'current' session identifier!");
+                return null;
+            }
+
+            session = SessionManager.getSession(player);
+            if (session == null) {
+                commandSender.sendMessage(PREFIX + "§cYou are not currently in any session!");
+                return null;
+            }
+            return session;
+        }
+
+        session = CommandHelper.sessionByNameId(sessionString);
+        if (session == null) {
+            commandSender.sendMessage(PREFIX + "§cNo session found with the identifier: '" + sessionString + "'!");
+            return null;
+        }
+        return session;
+    }
+
+    public static @Nullable Player selectPlayer(CommandSender commandSender, String playerString) {
+        Player player = Bukkit.getPlayer(playerString);
+        if (player == null) {
+            commandSender.sendMessage(PREFIX + "§cPlayer not found with name: '" + playerString + "'!");
+        }
+        return player;
+    }
+}
