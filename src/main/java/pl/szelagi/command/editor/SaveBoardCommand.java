@@ -44,11 +44,12 @@ public class SaveBoardCommand implements CommandExecutor {
                     player.sendMessage(PREFIX + "§7Board minimalized! §f(" + deltaMinimalizeMillis + "ms)");
 
                     save(creatorBoard, optimized, player);
-                    tag(creatorBoard, optimized, player);
 
-                    long deltaTotalMillis = System.currentTimeMillis() - millis;
-                    player.sendMessage(PREFIX + "§7Board size: §f" + optimized.size() + "§7, size-x: §f" + optimized.sizeX() + "§7, size-y: §f" + optimized.sizeY() + "§7, size-z: §f" + optimized.sizeZ() + "§7!");
-                    player.sendMessage(PREFIX + "§aBoard saved successfully! §f(" + deltaTotalMillis + "ms)");
+                    tag(creatorBoard, optimized, player, () -> {
+                        long deltaTotalMillis = System.currentTimeMillis() - millis;
+                        player.sendMessage(PREFIX + "§7Board size: §f" + optimized.size() + "§7, size-x: §f" + optimized.sizeX() + "§7, size-y: §f" + optimized.sizeY() + "§7, size-z: §f" + optimized.sizeZ() + "§7!");
+                        player.sendMessage(PREFIX + "§aBoard saved successfully! §f(" + deltaTotalMillis + "ms)");
+                    });
                 });
 
         return true;
@@ -66,12 +67,14 @@ public class SaveBoardCommand implements CommandExecutor {
         player.sendMessage(PREFIX + "§7Schematics save! §f(" + delta + "ms)");
     }
 
-    private void tag(CreatorBoard creator, ISpatial optimized, Player player) {
+    private void tag(CreatorBoard creator, ISpatial optimized, Player player, Runnable next) {
         long millis = System.currentTimeMillis();
-        var data = TagAnalyzer.process(optimized);
-        creator.getStorage()
-                .saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
-        long delta = System.currentTimeMillis() - millis;
-        player.sendMessage(PREFIX + "§7Tag process! §f(" + delta + "ms)");
+        TagAnalyzer.async(optimized, tagResolve -> {
+            creator.getStorage()
+                    .saveSignTagData(Board.SIGN_TAG_DATA_NAME, tagResolve);
+            long delta = System.currentTimeMillis() - millis;
+            player.sendMessage(PREFIX + "§7Tag process! §f(" + delta + "ms)");
+            next.run();
+        });
     }
 }
