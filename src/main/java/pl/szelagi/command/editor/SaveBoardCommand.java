@@ -9,6 +9,7 @@ import pl.szelagi.buildin.creator.Creator;
 import pl.szelagi.buildin.creator.CreatorBoard;
 import pl.szelagi.component.board.Board;
 import pl.szelagi.manager.SessionManager;
+import pl.szelagi.spatial.SpatialMinimalize;
 import pl.szelagi.tag.TagAnalyzer;
 
 import static pl.szelagi.command.CommandHelper.PREFIX;
@@ -35,22 +36,23 @@ public class SaveBoardCommand implements CommandExecutor {
         player.sendMessage(PREFIX + "§7§oSaving...");
         long millis = System.currentTimeMillis();
 
-        var optimized = creatorBoard
+        creatorBoard
                 .getStorage()
-                .toOptimized();
+                .minimalizeAsync(optimized -> {
+                    creatorBoard.getStorage()
+                            .saveSchematic(Board.SCHEMATIC_CONSTRUCTOR_NAME, optimized);
+                    creatorBoard.getStorage()
+                            .saveEmptySchematic(Board.SCHEMATIC_DESTRUCTOR_NAME, optimized);
 
-        creatorBoard.getStorage()
-                .saveSchematic(Board.SCHEMATIC_CONSTRUCTOR_NAME, optimized);
-        creatorBoard.getStorage()
-                .saveEmptySchematic(Board.SCHEMATIC_DESTRUCTOR_NAME, optimized);
+                    var data = TagAnalyzer.process(optimized);
+                    creatorBoard.getStorage()
+                            .saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
 
-        var data = TagAnalyzer.process(optimized);
-        creatorBoard.getStorage()
-                .saveSignTagData(Board.SIGN_TAG_DATA_NAME, data);
+                    long deltaMillis = System.currentTimeMillis() - millis;
+                    player.sendMessage(PREFIX + "§7Board size: §f" + optimized.size() + "§7, size-x: §f" + optimized.sizeX() + "§7, size-y: §f" + optimized.sizeY() + "§7, size-z: §f" + optimized.sizeZ() + "§7!");
+                    player.sendMessage(PREFIX + "§aBoard saved successfully! §f(" + deltaMillis + "ms)");
+                });
 
-        long deltaMillis = System.currentTimeMillis() - millis;
-        player.sendMessage(PREFIX + "§7Board size: §f" + optimized.size() + "§7, size-x: §f" + optimized.sizeX() + "§7, size-y: §f" + optimized.sizeY() + "§7, size-z: §f" + optimized.sizeZ() + "§7!");
-        player.sendMessage(PREFIX + "§aBoard saved successfully! §f(" + deltaMillis + "ms)");
 
         return true;
     }

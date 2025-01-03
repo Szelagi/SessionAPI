@@ -7,6 +7,7 @@ import org.joml.Vector3i;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Deprecated
 public class SpatialOptimizer implements ISpatial {
 	private Location first;
 	private Location second;
