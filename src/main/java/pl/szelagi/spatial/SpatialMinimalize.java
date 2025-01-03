@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class SpatialMinimalize {
-	private static final int PART_SIZE = 50;
+	private static final int PART_SIZE = 70;
 
 	public static void async(ISpatial spatial, Consumer<ISpatial> callback) {
 		var parts = SpatialMinimalize.toParts(spatial);
