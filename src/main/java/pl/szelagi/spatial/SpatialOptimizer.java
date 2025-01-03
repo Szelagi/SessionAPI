@@ -47,7 +47,7 @@ public class SpatialOptimizer implements ISpatial {
 			var x = block.getX();
 			var y = block.getY();
 			var z = block.getZ();
-			if (ISpatial.isAirMaterial(material))
+			if (BlockMethods.isAirMaterial(material))
 				return;
 			noAirCount.getAndIncrement();
 			// x
