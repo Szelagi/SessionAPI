@@ -14,6 +14,20 @@ import java.util.Map;
 public class TagResolve implements Serializable {
 	private final Map<String, List<Tag>> map = new HashMap<>();
 
+	public void add(@NotNull TagResolve resolve) {
+		for (Map.Entry<String, List<Tag>> entry : resolve.map.entrySet()) {
+			String key = entry.getKey();
+			List<Tag> tags = entry.getValue();
+			if (!map.containsKey(key)) {
+				var list = new ArrayList<Tag>(tags);
+				map.put(key, list);
+			} else {
+				var list = map.get(key);
+				list.addAll(tags);
+			}
+		}
+	}
+
 	public void add(Tag element) {
 		List<Tag> sameTypeElements;
 

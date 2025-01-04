@@ -17,7 +17,7 @@ public class SpatialMinimalize {
 	private static final int PART_SIZE = 70;
 
 	public static void async(ISpatial spatial, Consumer<ISpatial> callback) {
-		var parts = SpatialMinimalize.toParts(spatial);
+		var parts = spatial.partition(PART_SIZE);
 		var iterator = parts.iterator();
 		var resolves = new HashSet<SpatialResolve>();
 		var instance = SessionAPI.getInstance();
@@ -40,48 +40,13 @@ public class SpatialMinimalize {
 	}
 
 	public static ISpatial sync(ISpatial spatial) {
-		var parts = SpatialMinimalize.toParts(spatial);
+		var parts = spatial.partition(PART_SIZE);
 		var resolves = new HashSet<SpatialResolve>();
 		for (var part : parts) {
 			var resolved = resolve(part);
 			resolves.add(resolved);
 		}
 		return minimalize(spatial.getFirstPoint().getWorld(), resolves);
-	}
-
-	private static Set<ISpatial> toParts(ISpatial spatial) {
-		var first = spatial.getFirstPoint();
-		var second = spatial.getSecondPoint();
-		var parts = new HashSet<ISpatial>();
-		var xParts = (int) Math.ceil(spatial.sizeX() / (double) PART_SIZE);
-		var zParts = (int) Math.ceil(spatial.sizeZ() / (double) PART_SIZE);
-
-		var minX = Math.min(first.getX(), second.getX());
-		var minZ = Math.min(first.getZ(), second.getZ());
-		var minY = Math.min(first.getY(), second.getY());
-		var maxY = Math.max(first.getY(), second.getY());
-		var maxX = Math.max(first.getX(), second.getX());
-		var maxZ = Math.max(first.getZ(), second.getZ());
-		var world = first.getWorld();
-
-		var currentX = minX;
-		for (int x = 0; x < xParts; x++) {
-			var currentZ = minZ;
-			final var deltaX = Math.min(PART_SIZE, maxX - currentX + 1);
-
-			for (int z = 0; z < zParts; z++) {
-				final var deltaZ = Math.min(PART_SIZE, maxZ - currentZ + 1);
-
-				var firstPointPart = new Location(world, currentX, minY, currentZ);
-				var secondPointPart = new Location(world, currentX + deltaX - 1, maxY, currentZ + deltaZ - 1);
-				var spatialPart = new Spatial(firstPointPart, secondPointPart);
-				parts.add(spatialPart);
-
-				currentZ += deltaZ;
-			}
-			currentX += deltaX;
-		}
-		return parts;
 	}
 
 	private static ISpatial minimalize(World world, Collection<SpatialResolve> resolves) {
@@ -123,7 +88,7 @@ public class SpatialMinimalize {
 			var x = block.getX();
 			var y = block.getY();
 			var z = block.getZ();
-			if (ISpatial.isAirMaterial(material))
+			if (BlockMethods.isAirMaterial(material))
 				return;
 
 			if (!hasBlock.get()) {
@@ -143,43 +108,5 @@ public class SpatialMinimalize {
 		});
 
 		return new SpatialResolve(hasBlock.get(), min, max);
-	}
-
-	@TestOnly
-	private static boolean testPartAlgorithm(ISpatial spatial, Set<ISpatial> parts) {
-		var first = spatial.getFirstPoint();
-		var second = spatial.getSecondPoint();
-		var minX = (int) Math.min(first.getX(), second.getX());
-		var minZ = (int) Math.min(first.getZ(), second.getZ());
-		var maxX = (int) Math.max(first.getX(), second.getX());
-		var maxZ = (int) Math.max(first.getZ(), second.getZ());
-
-		boolean[][] covered = new boolean[maxX - minX + 1][maxZ - minZ + 1];
-		for (var part : parts) {
-			int startX = (int) part.getFirstPoint().getX();
-			int endX = (int) part.getSecondPoint().getX();
-			int startZ = (int) part.getFirstPoint().getZ();
-			int endZ = (int) part.getSecondPoint().getZ();
-
-			for (int x = startX; x <= endX; x++) {
-				for (int z = startZ; z <= endZ; z++) {
-					if (covered[x - minX][z - minZ]) {
-						System.out.println("Overlap found at X: " + x + ", Z: " + z);
-						return false;
-					}
-					covered[x - minX][z - minZ] = true;
-				}
-			}
-		}
-		for (int x = 0; x < covered.length; x++) {
-			for (int z = 0; z < covered[x].length; z++) {
-				if (!covered[x][z]) {
-					System.out.println("Gap found at X: " + (x + minX) + ", Z: " + (z + minZ));
-					return false;
-				}
-			}
-		}
-		System.out.println("Verification complete.");
-		return true;
 	}
 }
