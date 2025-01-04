@@ -1,16 +1,16 @@
 package pl.szelagi.spatial;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import pl.szelagi.SessionAPI;
+import pl.szelagi.component.session.Session;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -148,8 +148,17 @@ public interface ISpatial extends Cloneable {
 		return (a + b) / 2;
 	}
 
+	@Deprecated
 	default ISpatial toOptimized() {
 		return new SpatialOptimizer(getFirstPoint(), getSecondPoint()).optimize();
+	}
+
+	default void minimalizeAsync(Consumer<ISpatial> callback) {
+		SpatialMinimalize.async(this, callback);
+	}
+
+	default ISpatial minimalizeSync() {
+		return SpatialMinimalize.sync(this);
 	}
 
 	default Location getAbove(Location location) {
