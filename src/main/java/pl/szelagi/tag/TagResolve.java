@@ -19,7 +19,7 @@ public class TagResolve implements Serializable {
 			String key = entry.getKey();
 			List<Tag> tags = entry.getValue();
 			if (!map.containsKey(key)) {
-				var list = new ArrayList<Tag>(tags);
+				var list = new ArrayList<>(tags);
 				map.put(key, list);
 			} else {
 				var list = map.get(key);

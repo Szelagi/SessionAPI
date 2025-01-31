@@ -33,7 +33,7 @@ public class TagAnalyzer {
 		var nextElement = new Runnable() {
 			@Override
 			public void run() {
-				var resolved = process(iterator.next());
+				var resolved = process(spatial, iterator.next());
 				globalResolve.add(resolved);
 				if (iterator.hasNext()) {
 					Bukkit.getScheduler().runTaskLater(instance, this, 1L);
@@ -46,9 +46,9 @@ public class TagAnalyzer {
 		Bukkit.getScheduler().runTask(instance, nextElement);
 	}
 
-	private static TagResolve process(@NotNull ISpatial spatial) {
+	private static TagResolve process(@NotNull ISpatial baseSpatial, @NotNull ISpatial processSpatial) {
 		var signTagData = new TagResolve();
-		spatial.eachBlocks(block -> {
+		processSpatial.eachBlocks(block -> {
 			var material = block.getType();
 			if (!SIGN_MATERIALS.contains(material))
 				return;
@@ -61,7 +61,7 @@ public class TagAnalyzer {
 			var args = Arrays
 					.stream(signSide.getLines())
 					.skip(1).toList();
-			var relativeLocation = new RelativeLocation(block.getLocation(), spatial.getCenter());
+			var relativeLocation = new RelativeLocation(block.getLocation(), baseSpatial.getCenter());
 			var blockData = block.getBlockData();
 			BlockFace blockFace;
 
