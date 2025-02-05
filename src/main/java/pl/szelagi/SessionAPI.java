@@ -7,6 +7,9 @@
 
 package pl.szelagi;
 
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.ServerOperator;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,6 +23,7 @@ import pl.szelagi.world.SessionWorldManager;
 import java.io.File;
 
 public final class SessionAPI extends JavaPlugin {
+	public static final int PLUGIN_ID = 24663;
 	public static final File SESSION_API_DIRECTORY = new File(Bukkit
 			                                                          .getServer()
 			                                                          .getPluginsFolder()
@@ -51,6 +55,8 @@ public final class SessionAPI extends JavaPlugin {
 
 		SessionWorldManager.initialize(this);
 		Command.registerCommands();
+
+		bStats();
 	}
 
 	@Override
@@ -62,5 +68,11 @@ public final class SessionAPI extends JavaPlugin {
 		Bukkit.getOnlinePlayers().stream()
 		      .filter(ServerOperator::isOp)
 		      .forEach(player -> player.sendMessage(message));
+	}
+
+	private void bStats() {
+		// Initialize bStats
+		var metrics = new Metrics(this, PLUGIN_ID);
+		getLogger().info("All bStats metrics have been added!");
 	}
 }
