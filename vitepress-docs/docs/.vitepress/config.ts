@@ -13,7 +13,7 @@ export default defineConfig({
     title: 'SessionAPI',
     description: 'The library facilitates game containerization on a Minecraft server, enabling the creation of isolated environments within the game with separate logic and state.',
     outDir: "../../docs",
-    base: "/",
+    base: "/SessionAPI/",
 
     locales: {
         root: {
