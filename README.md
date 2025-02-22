@@ -52,7 +52,29 @@ interference.
 
 ## Installation
 
-1. Download the latest version of the plugin from releases.
-2. Include the downloaded plugin as a library in your Java project.
-3. Set `depend: [SessionAPI]` in the `plugin.yml` file.
-4. Copy the downloaded plugin to the server's plugin folder `/plugins`.
+1. Download the latest version of the SessionAPI plugin from the releases section.
+2. Add `SessionAPI.jar` to the `plugins` folder on your Minecraft server.
+3. Download the latest version of the `FastAsyncWorldEdit` plugin.
+4. Add `FastAsyncWorldEdit` to the `plugins` folder on your Minecraft server.
+5. Add `SessionAPI.jar` as a dependency in your Java project.
+6. Set the dependency as `compileOnly` or `provided`.
+7. In the `plugin.yml` file, add the following entry: `depend: [SessionAPI]`
+
+### Github Packages
+Alternatively, you can add SessionAPI via Maven:
+
+```
+<repositories>
+  <repository>
+    <id>github</id>
+    <url>https://maven.pkg.github.com/Szelagi/SessionAPI</url>
+  </repository>
+</repositories>
+
+<dependency>
+  <groupId>pl.szelagi</groupId>
+  <artifactId>sessionapi</artifactId>
+  <version>2.3.0-SNAPSHOT</version>
+  <scope>provided</scope>
+</dependency>
+```
