@@ -9,7 +9,7 @@ Na serwerze SzybkiegoBanana w minigrze Paintball, gdzie rzucaliśmy się śnież
 trafienie śnieżką eliminowało go z gry. Jednak istniała możliwość ucieczki z rozgrywki za pomocą komendy /tpahere, którą
 można było wysłać przed rozpoczęciem gry.
 
-<img src="./img/paintball.jpg" style="max-width: 350px; border-radius: 5px">
+<img src="../img/paintball.jpg" style="max-width: 350px; border-radius: 5px">
 
 Wyobraź sobie, co się działo, gdy uciekłem z tej nieśmiertelnej rozgrywki i nielegalnie trafiłem na arenę PvP. Dostałem
 od znajomego przedmioty do walki, a dokładniej tylko miecz, ponieważ logika gry Paintball wciąż działała na arenie PvP.

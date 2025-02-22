@@ -2,7 +2,7 @@
 
 Proste wprowadzenie do pracy z SessionAPI, obejmujące podstawy zarządzania sesjami i komponentami.
 
-![zdjęcie poglądowe pierwszego projektu](./img/pierwszy-kontener.png)
+![zdjęcie poglądowe pierwszego projektu](../img/pierwszy-kontener.png)
 
 ## Listenery w bibliotece
 
@@ -156,4 +156,4 @@ wszystko jest obudowane w komponenty. Jest ona dobrze ustrukturyzowana i zapewni
 Kiedy fragment drzewa zostaje odłączony, wszystkie jego elementy, łącznie z dziećmi, są rekurencyjnie niszczone, a
 listenery uruchamiane w przewidywalnej kolejności.
 
-![zdjęcie poglądowe pierwszego projektu](./img/schemat-hierarchia.png)
+![zdjęcie poglądowe pierwszego projektu](../img/schemat-hierarchia.png)
