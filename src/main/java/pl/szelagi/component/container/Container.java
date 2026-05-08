@@ -214,7 +214,7 @@ public abstract class Container extends Component {
     }
 
     public @NotNull <T> Set<T> getComponents(Class<T> clazz) {
-        return index.get(clazz);
+        return new HashSet<>(index.get(clazz));
     }
 
     public <T> void forEachComponents(Class<T> clazz, Consumer<T> consumer) {

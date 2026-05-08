@@ -15,6 +15,7 @@ public class ContainerCommand extends CommandRouter {
         register(new LeaveCommand());
         register(new AddPlayerCommand());
         register(new RemovePlayerCommand());
+        register(new IndexCommand());
     }
 
     @Override

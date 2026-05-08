@@ -37,7 +37,7 @@ public class ComponentIndex {
         StringBuilder sb = new StringBuilder("ComponentIndex {\n");
         for (var entry : index.entrySet()) {
             sb.append("  ")
-                    .append(entry.getKey().getClass().getName())
+                    .append(entry.getKey().getName())
                     .append(":\n");
             for (var component : entry.getValue()) {
                 sb.append("    - ")
