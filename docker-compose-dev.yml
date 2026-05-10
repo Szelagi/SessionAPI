@@ -1,0 +1,20 @@
+services:
+  mc-dev:
+    image: itzg/minecraft-server
+    container_name: craftcontainers-dev
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "1.21.11"
+      DIFFICULTY: "easy"
+      LEVEL_TYPE: "flat"
+      GENERATOR_SETTINGS: '{"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":3},{"block":"minecraft:sandstone","height":52}],"biome":"minecraft:desert"}'
+
+      PLUGINS: |
+        https://ci.athion.net/job/FastAsyncWorldEdit/1306/artifact/artifacts/FastAsyncWorldEdit-Paper-2.15.1-SNAPSHOT-1306.jar
+
+    volumes:
+      - ./.server-data:/data
+    restart: unless-stopped

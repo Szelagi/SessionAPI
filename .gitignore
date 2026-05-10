@@ -141,3 +141,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test server
+/.server-data/
+
+.env
