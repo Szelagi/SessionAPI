@@ -146,3 +146,6 @@ dist-ssr
 /.server-data/
 
 .env
+
+# Mise tool manager
+mise.toml
