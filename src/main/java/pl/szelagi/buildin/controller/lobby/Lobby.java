@@ -62,7 +62,7 @@ public class Lobby extends Controller {
 
         messageTimer.setBreakCountMessage("§cWe don't have enough players! Start cancelled.");
         messageTimer.getFinalizeEvent()
-                .register(this::lobbyFinalize);
+                .register(this, Lobby::lobbyFinalize);
     }
 
     @Override

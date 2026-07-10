@@ -8,39 +8,63 @@
 package pl.szelagi.event;
 
 import org.jetbrains.annotations.NotNull;
+import pl.szelagi.component.base.Component;
+import pl.szelagi.component.base.ComponentStatus;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
  * Dispatches events to registered listeners.
- * <p>
- * Supports both event-specific listeners ({@link Consumer<T>}) and general
- * no-argument listeners ({@link Runnable}).
  *
  * @param <T> the type of event data passed to listeners
  */
 public class EventDispatcher<T> {
-    private final @NotNull Set<Consumer<T>> listeners = new HashSet<>();
-    private final @NotNull Set<Runnable> runnableListeners = new HashSet<>();
+    private final @NotNull List<RegisteredConsumer<T, ?>> componentListeners = new ArrayList<>();
+    private final @NotNull List<RegisteredRunnable<?>> componentRunnableListeners = new ArrayList<>();
+    private final @NotNull List<Consumer<T>> uncheckedListeners = new ArrayList<>();
+    private final @NotNull List<Runnable> uncheckedRunnableListeners = new ArrayList<>();
 
     /**
      * Registers a listener that consumes the event.
      *
+     * @param component the component that owns the listener
      * @param listener the listener to register
+     * @param <C> the type of the component
      */
-    public void register(@NotNull Consumer<T> listener) {
-        listeners.add(listener);
+    public <C extends Component> void register(@NotNull C component, @NotNull BiConsumer<C, T> listener) {
+        componentListeners.add(new RegisteredConsumer<>(component, listener));
     }
 
     /**
      * Registers a listener that runs without event context.
      *
+     * @param component the component that owns the listener
+     * @param listener the listener to register
+     * @param <C> the type of the component
+     */
+    public <C extends Component> void register(@NotNull C component, @NotNull Consumer<C> listener) {
+        componentRunnableListeners.add(new RegisteredRunnable<>(component, listener));
+    }
+
+    /**
+     * Registers an unchecked listener that consumes the event.
+     *
      * @param listener the listener to register
      */
-    public void register(@NotNull Runnable listener) {
-        runnableListeners.add(listener);
+    public void registerUnchecked(@NotNull Consumer<T> listener) {
+        uncheckedListeners.add(listener);
+    }
+
+    /**
+     * Registers an unchecked listener that runs without event context.
+     *
+     * @param listener the listener to register
+     */
+    public void registerUnchecked(@NotNull Runnable listener) {
+        uncheckedRunnableListeners.add(listener);
     }
 
     /**
@@ -49,11 +73,25 @@ public class EventDispatcher<T> {
      * @param event the event object to pass to listeners
      */
     public void dispatch(T event) {
-        for (var listener : listeners) {
-            listener.accept(event);
+        new ArrayList<>(componentListeners).forEach(registered -> registered.dispatch(event));
+        new ArrayList<>(componentRunnableListeners).forEach(RegisteredRunnable::dispatch);
+        new ArrayList<>(uncheckedListeners).forEach(listener -> listener.accept(event));
+        new ArrayList<>(uncheckedRunnableListeners).forEach(Runnable::run);
+    }
+
+    private record RegisteredConsumer<T, C extends Component>(C component, BiConsumer<C, T> listener) {
+        public void dispatch(T event) {
+            if (component.status() == ComponentStatus.RUNNING) {
+                listener.accept(component, event);
+            }
         }
-        for (var listener : runnableListeners) {
-            listener.run();
+    }
+
+    private record RegisteredRunnable<C extends Component>(C component, Consumer<C> listener) {
+        public void dispatch() {
+            if (component.status() == ComponentStatus.RUNNING) {
+                listener.accept(component);
+            }
         }
     }
 }
